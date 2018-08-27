@@ -1,0 +1,331 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>培训首页</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+		</script>
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content pxsy">
+			<!--头部导航-->
+			<div class="head-bar mui-row">
+				
+				<div class="mui-col-xs-2">
+					<a href="anchor_train_stardard_course.html">
+					<svg class="icon" aria-hidden="true">
+						<use xlink:href="#icon-zhuboduan_peixun_biaozhunkecheng"></use>
+					</svg>
+					<h2>标准课程</h2>
+					</a>
+				</div>
+				
+				<div class="mui-col-xs-2 xueba">
+					<a href="anchor_train_score_rank.html">
+					<svg class="icon" aria-hidden="true">
+						<use xlink:href="#icon-zhuboduan_peixun_xuebapaihang"></use>
+					</svg>
+					<h2>学霸排行</h2>
+					</a>
+				</div>
+				<div class="mui-col-xs-2 jiangli">
+					<a href="anchor_train_rewardcenter.html">
+					<svg class="icon" aria-hidden="true">
+						<use xlink:href="#icon-zhuboduan_peixun_jianglizhongxin"></use>
+					</svg>
+					<h2>奖励中心</h2></a>
+				</div>
+				<div class="mui-col-xs-2 kaoshi">
+					<a href="anchor_train_my_exam.html">
+					<svg class="icon" aria-hidden="true">
+					<use xlink:href="#icon-zhuboduan_peixun_wodekaoshi"></use>
+					</svg>
+					<h2>我的考试</h2>
+					</a>
+				</div>
+				<div class="mui-col-xs-2">
+					<a href="anchor_train_my_study.html"><svg class="icon" aria-hidden="true">
+						<use xlink:href="#icon-zhuboduan_peixun_wodexuexi"></use>
+					</svg></a>
+					<h2>我的学习</h2>
+				</div>
+			</div>
+			<!--轮播-->
+			<div class="slider-wrap">
+				<div id="slider" class="mui-slider">
+					<div class="mui-slider-group mui-slider-loop">
+						<!-- 额外增加的一个节点(循环轮播：第一个节点是最后一张轮播) -->
+						<div class="mui-slider-item mui-slider-item-duplicate">
+							<a href="#">
+								<img :src="banners[len-1].img|urlFilter" width="100%"  />
+							</a>
+						</div>
+						<!-- 第一张 -->
+						<div class="mui-slider-item" v-for="item in banners">
+							<a :href="item.linkUrl">
+								<img :src="item.img|urlFilter" width="100%"/>
+							</a>
+						</div>
+						<!-- 第四张 -->
+						<!-- 额外增加的一个节点(循环轮播：最后一个节点是第一张轮播) -->
+						<div class="mui-slider-item mui-slider-item-duplicate">
+							<a href="#">
+								<img :src="banners[0].img|urlFilter" width="100%"/>
+							</a>
+						</div>
+					</div>
+					<div class="mui-slider-indicator">
+						<div class="mui-indicator" v-for="(item,index) in banners.slice(0,len)" v-bind:class="[index==0?'mui-indicator mui-active':'mui-indicator']"></div>
+						<!--<div class="mui-indicator"></div>
+						<div class="mui-indicator"></div>-->
+					</div>
+				</div>
+			</div>
+			<!--轮播结束-->
+			<!--标准课程-->
+			<div class="standard" id="standard" @click="detail(1,standard.courseSort,standard.lessonSort,standard.progress,standard.needToExam,standard.hasStudyNum,standard.userid)">
+				<div class="content-title">
+					<span class="sekuai "></span>
+					<span class="icon font_family icon-zhuboduan_peixun_biaozhunkecheng_xiaotubiao"></span>
+					<h3>标准课程</h3>
+					<p>已完成{{parseInt(standard.standardProgress*100)}}%</p>
+				</div>
+				<div class="content">
+					<img :src="standard.videoImage" />
+					<img class="hot" src="img/icon_HOT@3x.png" />
+					<div class="f-bar">
+						<div class="f-bar-left mui-pull-left">
+							<a href="javascript:;" class="icon font_family icon-zhuboduan_peixun_liulanliang"></a>
+							<span>{{standard.playNum}}</span>
+						</div>
+						<div class="f-bar-right mui-pull-right">
+							<div class="mui-pull-left">
+								<a href="javascript:;" class="icon font_family icon-zhuboduan_peixun_zan"></a>
+								<span>{{standard.giveLikeNum}}</span>
+							</div>
+							<div class="mui-pull-right">
+								<a href="javascript:;" class="icon font_family icon-zhuboduan_peixun_pinglun"></a>
+								<span>{{standard.commentNum}}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="course-title">
+					<div>
+						<div class="mui-pull-left">{{standard.lessonName}}
+							<p>{{standard.courseBrief | lenFilter}}</p>
+						</div>
+						<a href="javascript:;" class="mui-pull-right">{{standard.studyNum}}人已学 <span class="icon font_family icon-shouye_youjiantou_chakangengduo"></span></a>
+					</div>
+				</div>
+			</div>
+			<!--进阶课程-->
+			<div class="advanced" id="advanced"  >
+				<div class="content-title">
+					<span class="sekuai"></span>
+					<span class="icon font_family icon-zhuboduan_peixun_jinjiekecheng_xiaotubiao"></span>
+					<h3>延展课程</h3>
+					<p></p>
+				</div>
+				<template v-for="(course, index) in filterBody" >
+				<div @click="detail(2,course.courseSort,course.lessonSort,course.progress,'','')">
+				<div class="content">
+					<img :src="course.videoImage" />
+					<img class="hot" src="img/icon_HOT@3x.png" />
+					<div class="f-bar">
+						<div class="f-bar-left mui-pull-left">
+							<a href="javascript:;"class="icon font_family icon-zhuboduan_peixun_liulanliang"></a>
+							<span>{{course.playNum}}</span>
+						</div>
+						<div class="f-bar-right mui-pull-right">
+							<div class="mui-pull-left">
+								<a href="javascript:;" class="icon font_family icon-zhuboduan_peixun_zan"></a>
+								<span>{{course.giveLikeNum}}</span>
+							</div>
+							<div class="mui-pull-right">
+								<a href="javascript:;"class="icon font_family icon-zhuboduan_peixun_pinglun"></a>
+								<span>{{course.commentNum}}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="course-title">
+					<div>
+						<div class="mui-pull-left">{{course.lessonName}}
+							<p>{{course.courseBrief | lenFilter}}</p>
+						</div>
+						<a href="javascript:;" class="mui-pull-right">{{course.studyNum}}人已学 <span class="icon font_family icon-shouye_youjiantou_chakangengduo"></span></a>
+					</div>
+				</div>
+				</div>		
+				</template>
+				<div class="more-btn" @click="showMore()" id="more">查看更多<span class="icon font_family icon-shouye_youjiantou_chakangengduo"></span></div>
+			</div>
+		</div>
+		<!--底部选项卡-->
+		<nav class="my-foot-tab mui-row">
+			<a href="anchor_index.html" class="my-tab-item mui-col-xs-3">				
+				<span class="icon font_family icon-shouye_shouye1"></span>
+				<span class="my-tab-label">首页</span>
+			</a>
+			<a href="anchor_message.html" class="my-tab-item mui-col-xs-3">
+				<span class="icon font_family icon-shouye_xiaoxi"><span class="mui-badge mui-badge-red"></span></span>
+				<span class="my-tab-label">消息</span>
+
+			</a>
+
+			<a href="#" class="my-tab-item mui-col-xs-3">
+				<svg class="icon " aria-hidden="true">
+					<use xlink:href="#icon-shouye_xuexi_xuanzhong"></use>
+				</svg>
+				<span class="my-tab-label">学习</span>
+			</a>
+			<a href="anchor_personal.html" class="my-tab-item mui-col-xs-3">
+				<span class="icon font_family icon-shouye_wode"></span>
+				<span class="my-tab-label">我的</span>
+			</a>
+		</nav>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			var banners = new Vue({
+				el: '#slider',
+				filters: {
+					urlFilter: function(value) {
+						if(!value) return ''
+						value = value.toString()
+						return _cdn_admin_path + value.slice(1)
+					}
+				},
+				data: {
+					banners : ''
+				},
+				computed: {
+					len: function() {
+						return this.banners.length;
+					}
+				},
+				created: function() {
+					var _self = this;
+					$.ajax({
+						url: globel.ctx + apiconfig.propaganda_url,
+						data: {
+							token: globel.token,
+							type: 'trainBanner'
+						},
+						type: 'get',
+						async: false,
+						success: function(res) {
+							if(res.success == true){
+								_self.banners = res.body.banners;
+							}
+						}
+					});
+				}
+			});
+			mui('#slider').slider({
+				interval: 5000 //自动播放周期
+			});
+			var standard =new Vue({
+				el: '#standard',
+				data: {
+					standard: ""
+				},
+				created: function(){
+					var _self = this;
+					$.ajax({
+						type:"get",
+						url:globel.ctx + apiconfig.getStandardStudyingCourse_url,
+						data:{
+							token:globel.token
+						},
+						async:false,
+						success:function(res){
+							_self.standard = res.body;
+						}
+					});
+				},
+				filters: {
+					lenFilter: function(value) {
+						if(!value) return ''
+						value = value.toString();
+						if(value.length > 18){
+							return value.substr(0,18)+"..."
+						}else{
+							return value;
+						}
+					}
+				}
+			});
+			var advanced =new Vue({
+				el: '#advanced',
+				data: {
+					advanced: "",
+					limitNum: 1
+				},
+				created: function(){
+					var _self = this;
+					$.ajax({
+						type:"post",
+						url:globel.ctx + apiconfig.listAdvancedCourse_url,
+						data:{
+							token:globel.token,
+							 type: '2',
+						},
+						async:false,
+						success:function(res){
+							_self.advanced = res.body.course;
+						}
+					});
+				},
+				//显示2条数据
+				computed: {
+					filterBody: function() {
+						return this.advanced.slice(0, this.limitNum);
+						//return this.advanced;
+					}
+				},
+				filters: {
+					lenFilter: function(value) {
+						if(!value) return ''
+						value = value.toString();
+						if(value.length > 10){
+							return value.substr(0,18)+"..."
+						}else{
+							return value;
+						}
+					}
+				}
+			});
+			
+			function detail(type,courseSort,lessonSort,progress,needToExam,hasStudyNum,userid){
+				location = htmlconfig.anchor_course_details+'?type='+type+'&courseSort='+courseSort+'&lessonSort='+lessonSort+'&progress='+progress+'&userid='+userid;
+			}
+
+			function showMore(){
+				if(advanced.limitNum < advanced.advanced.length){
+					advanced.limitNum = (advanced.limitNum + 2) > advanced.advanced.length?advanced.advanced.length:(advanced.limitNum + 2);
+				}else{
+					$('#more').html('没有更多了')
+				}
+			}
+		</script>
+	</body>
+
+</html>

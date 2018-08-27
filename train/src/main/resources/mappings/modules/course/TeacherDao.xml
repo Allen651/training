@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.TeacherDao">
+    
+	<sql id="teacherColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.teacher_name AS "teacherName",
+		a.note AS "note",
+		a.head_image AS "headImage",
+		a.tags AS "tags"
+	</sql>
+	
+	<sql id="teacherJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="Teacher" >
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM train_teacher a
+		<include refid="teacherJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Teacher" >
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM train_teacher a
+		<include refid="teacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="teacherName != null and teacherName != ''">
+				AND a.teacher_name = #{teacherName}
+			</if>
+			<if test="tags != null and tags != ''">
+				AND a.tags = #{tags}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Teacher" >
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM train_teacher a
+		<include refid="teacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_teacher(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			teacher_name,
+			note,
+			head_image,
+			tags
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{teacherName},
+			#{note},
+			#{headImage},
+			#{tags}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_teacher SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			teacher_name = #{teacherName},
+			note = #{note},
+			head_image = #{headImage},
+			tags = #{tags}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_teacher
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_teacher SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Teacher" statementType="STATEMENT">
+		select * FROM train_teacher  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

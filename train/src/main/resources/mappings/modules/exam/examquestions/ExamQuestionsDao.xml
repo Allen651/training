@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.exam.dao.examquestions.ExamQuestionsDao">
+    
+	<sql id="examQuestionsColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.title AS "title",
+		a.point AS "point",
+		a.type AS "type",
+		a.sort AS "sort",
+		a.course_id AS "course.id",
+		course.course_name AS "course.courseName"
+	</sql>
+	
+	<sql id="examQuestionsJoins">
+	LEFT JOIN train_course course ON course.id = a.course_id
+	</sql>
+	
+    
+	<select id="get" resultType="ExamQuestions" >
+		SELECT 
+			<include refid="examQuestionsColumns"/>
+		FROM train_exam_questions a
+		<include refid="examQuestionsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getQuestionsNumOfCourse" resultType="integer" >
+		SELECT count(0)
+		FROM train_exam_questions a
+		WHERE a.course_id = #{courseId}
+	</select>
+	<select id="findList" resultType="ExamQuestions" >
+		SELECT 
+			<include refid="examQuestionsColumns"/>
+		FROM train_exam_questions a
+		<include refid="examQuestionsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="course != null and course.id != null and course.id != ''">
+				AND a.course_id = #{course.id}
+			</if>
+			<if test="courseId != null  and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ExamQuestions" >
+		SELECT 
+			<include refid="examQuestionsColumns"/>
+		FROM train_exam_questions a
+		<include refid="examQuestionsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_exam_questions(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			title,
+			point,
+			type,
+			sort,
+			course_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{title},
+			#{point},
+			#{type},
+			#{sort},
+			#{course.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_exam_questions SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			title = #{title},
+			point = #{point},
+			type = #{type},
+			sort = #{sort},
+			course_id = #{course.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_exam_questions
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_exam_questions SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ExamQuestions" statementType="STATEMENT">
+		select * FROM train_exam_questions  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

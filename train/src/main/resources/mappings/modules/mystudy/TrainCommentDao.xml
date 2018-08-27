@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.mystudy.dao.TrainCommentDao">
+    
+	<sql id="trainCommentColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.topic_id AS "topicid",
+		a.userid AS "userid",
+		a.content AS "content",
+		a.relatid AS "relatid",
+		a.parentid AS "parentid",
+		a.type AS "type",
+		a.givelike_num AS "givelikeNum",
+		a.givelike_staus AS "givelikeStaus",
+		a.givezan AS "givezan"
+	</sql>
+	
+	<sql id="trainCommentJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="TrainComment" >
+		SELECT 
+			<include refid="trainCommentColumns"/>
+		FROM train_comment a
+		<include refid="trainCommentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TrainComment" >
+		SELECT 
+			<include refid="trainCommentColumns"/>
+		FROM train_comment a
+		<include refid="trainCommentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TrainComment" >
+		SELECT 
+			<include refid="trainCommentColumns"/>
+		FROM train_comment a
+		<include refid="trainCommentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_comment(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			topic_id,
+			userid,
+			content,
+			relatid,
+			parentid,
+			type,
+			givelike_num,
+			givelike_staus,
+			givezan
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{topicid},
+			#{userid},
+			#{content},
+			#{relatid},
+			#{parentid},
+			#{type},
+			#{givelikeNum},
+			#{givelikeStaus},
+			#{givezan}
+		)
+	</insert>
+	
+	<insert id="insertZan">
+		INSERT IGNORE INTO train_comment(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			userid,
+			givelike_num,
+			givelike_staus,
+			givezan
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{userid},
+			#{givelikeNum},
+			#{givelikeStaus},
+			#{givezan}
+		)
+	</insert>
+	
+	<update id="updateZan">
+		UPDATE train_comment SET 	
+			update_date = #{updateDate},
+			userid = #{userid},
+			givelike_num=#{givelikeNum},
+			givelike_staus = #{givelikeStaus},
+			givezan = #{givezan}
+		WHERE id = #{id}
+	</update>
+	
+	
+	
+	<update id="update">
+		UPDATE train_comment SET 	
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			topic_id = #{topicid},
+			userid = #{userid},
+			content = #{content},
+			relatid = #{relatid},
+			parentid = #{parentid},
+			type = #{type},
+			givelike_num = #{givelikeNum},
+			givelike_staus = #{givelikeStaus},
+			givezan = #{givezan}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_comment
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_comment SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TrainComment" statementType="STATEMENT">
+		select * FROM train_comment  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 主播评论 -->
+	<select id="findComment" resultType="TrainComment">
+		<!-- select * FROM train_comment  where topic_id = #{0} and type = #{1} -->
+		
+		SELECT a.*,u.nickname,anchor.head_picture,anchor.sex FROM `train_comment` a, zhaomu_user u,zhaomu_anchor_info anchor where a.userid =u.id  
+		AND a.userid = anchor.user_id  and a.topic_id = #{0} and a.type = #{1} and  anchor.del_flag = '0'  ORDER BY create_date desc
+		<!--  SELECT a.*,u.nickname,anchor.head_picture,anchor.sex,
+		 talent.head_picture talentheadpicture, talent.sex  talentsex
+		 FROM `train_comment` a, zhaomu_user u,zhaomu_anchor_info anchor,zhaomu_talent_info talent where a.userid =u.id  and a.userid = talent.user_id
+		AND a.userid = anchor.user_id  and a.topic_id = #{0} and a.type = #{1} and  anchor.del_flag = '0'  ORDER BY create_date desc  -->
+	</select>
+	
+	<!--根据主播直接评论id查回复评论  -->
+	<select id="findChirenComment" resultType="TrainComment">
+		SELECT a.*,u.nickname,anchor.head_picture,anchor.sex FROM `train_comment` a, zhaomu_user u,zhaomu_anchor_info anchor where a.relatid =u.id  
+		AND a.relatid = anchor.user_id  and a.parentid = #{0} and  anchor.del_flag = '0'  ORDER BY create_date desc
+	</select>
+	
+	<select id="commentsum" resultType="double">
+		select count(0) FROM train_comment  where parentid = #{0} 
+	</select>
+	
+	
+	<select id="findComme" resultType="TrainComment">
+		select * FROM train_comment  where topic_id = #{0} 
+	</select>
+	
+	<select id="findmyComMentList" resultType="TrainComment">
+		select * FROM train_comment  where userid = #{0} and  givelike_staus=#{1}
+	</select>
+	
+	<select id="findCommentNumByLesson" resultType="int" >
+		SELECT count(0)
+		FROM train_comment a
+		where a.del_flag = 0 and a.topic_id= #{0} and a.type= '0'
+	</select>
+	
+	
+		<!-- 星探评论 -->
+	<select id="findTalentComment" resultType="TrainComment">
+		
+		SELECT a.*,u.nickname,talent.head_picture,talent.sex FROM `train_comment` a, zhaomu_user u,zhaomu_talent_info talent where u.id =talent.user_id  
+		AND a.userid = talent.id  and a.topic_id = #{0} and a.type = #{1} and  talent.del_flag = '0'  ORDER BY create_date desc
+		<!--  SELECT a.*,u.nickname,anchor.head_picture,anchor.sex,
+		 talent.head_picture talentheadpicture, talent.sex  talentsex
+		 FROM `train_comment` a, zhaomu_user u,zhaomu_anchor_info anchor,zhaomu_talent_info talent where a.userid =u.id  and a.userid = talent.user_id
+		AND a.userid = anchor.user_id  and a.topic_id = #{0} and a.type = #{1} and  anchor.del_flag = '0'  ORDER BY create_date desc  -->
+	</select>
+	
+	<!--根据星探直接评论id查回复评论  -->
+	<select id="findTalentChirenComment" resultType="TrainComment">
+		SELECT a.*,u.nickname,talent.head_picture,talent.sex FROM `train_comment` a, zhaomu_user u,zhaomu_talent_info talent where talent.user_id  =u.id  
+		AND a.relatid = talent.id  and a.parentid = #{0} and  talent.del_flag = '0'  ORDER BY create_date desc
+	</select>
+	
+</mapper>

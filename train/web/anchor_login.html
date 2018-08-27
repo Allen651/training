@@ -1,0 +1,533 @@
+<!--header-->
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>杰夫互娱主播登录</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>
+		<script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+		<style>
+			body{
+				background-color: white;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!--headerend-->
+		<!--主体-->
+		<div class="mui-content mui-text-center bbhwl">
+			<img class="logo" src="img/bj_logo_new@3x.png" />
+			<div class="tab">
+				<div onclick="tab1()" class="login active">登录</div>
+				<div onclick="tab2()" class="regist">注册</div>
+			</div>
+			<form action="shenfenxuanze.html" method="get"class="login-form">
+				<div class="user mui-input-row">
+					<label>+ 86 <span class="xian"></span></label>
+					<input id="phone" type="number" onblur="checkPhone()" onfocus="checkPhone1()" type="text" placeholder="请输入手机号" />
+				</div>
+				<div class="psd mui-input-row">
+					<input id="psd" type="password" oninput="checkPsd()" placeholder="请输入登录密码" />
+					<span class="yanjing icon font_family icon-zhucedenglu_yanjing_zhengkai"></span>
+				</div>
+				<div class="errormessage">
+					<span id="error-message"></span>
+				</div>
+				<input type="button" id="button" value="登录" disabled="disabled" onClick="login()" />
+				<div id="AppMain" class="forgotpsd mui-row">
+					<span class="mui-pull-left"><input type="checkbox" id="isAutoLoginId"/><label for="isAutoLoginId"></label>自动登录</span>
+					<a href="forget_pwd.html?role=Anchor" class="mui-pull-right">忘记密码</a>
+				</div>
+				<a href="#" class="weixin" onclick="wxlogin();">
+					<img src="img/weixin.png" />
+					<p>微信登录</p>
+				</a>
+			</form>
+			<form method="post" class="mui-text-center regist-form" id="registForm">
+				<div class="user mui-input-row">
+					<label>+ 86 <span class="xian"></span></label>
+					<input type="number" id="mobile" maxlength="11" placeholder="请输入手机号" />
+				</div>
+				<div class="yanzhengma mui-input-row">
+					<input type="number" maxlength="6" id="validateCode" placeholder="请输入验证码" />
+					<button id="validCodeBtn" class="mui-pull-right" disabled="disabled">获取验证码</button>
+				</div>
+				<div class="psd mui-input-row">
+					<input type="password" id="password" placeholder="请设置登录密码" />
+					<span class="yanjing icon font_family icon-zhucedenglu_yanjing_zhengkai"></span>
+				</div>				
+				<div class="errormessage" id="errorDiv" style="visibility:hidden;">
+					<span id="errormsg"><span class="iconfont icon-gantanhao"></span></span>
+				</div>
+				<input type="button" id="registBtn" value="注册" />
+				<div class="xieyi">
+					<a>绑定后意味着同意杰夫互娱的《<i> 使用协议 </i>》</a>
+				</div>
+			</form>
+			<div class="loading">
+				<img id="loading" src="img/loading1.gif" />
+				<p>正在登录中…</p>
+			</div>
+		</div>
+		<div class="mark" id="mymark" >
+			<div id="markbox" >
+				<div>
+					<span onclick="cancelBind();">X</span>
+					<h4>您的手机号已注册</h4>
+					<p>
+						1、请确认是否输入有误；<br /> 2、如果是您已用此手机号注册过杰夫互娱账号，请直接关联该杰夫互娱账号；
+						<br /> 3、如有任何问题，请致电杰夫互娱客服18603718567
+						<br />
+					</p>
+					<div class="btn-group">
+						<button onclick="weixinBind();">去关联</button>
+						<button onclick="cancelBind();">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()	
+			window.onload=is_weixin();
+			var loading=document.getElementsByClassName("loading")[0];
+			autodivheight(loading);
+			//alert("openid:"+data.body.openid)
+			var yanjing = $(".yanjing");
+			var psd=$("#psd"); 
+			function mima1() {
+				yanjing.removeClass("icon-zhucedenglu_yanjing_bihe");
+				yanjing.addClass("icon-zhucedenglu_yanjing_zhengkai");
+				psd.attr("type","text");
+				$("#password").attr("type","text");
+				yanjing.bind("click", mima2);
+				yanjing.unbind("click", mima1);
+			};
+			function mima2() {
+				yanjing.removeClass("icon-zhucedenglu_yanjing_zhengkai");
+				yanjing.addClass("icon-zhucedenglu_yanjing_bihe");
+				psd.attr("type","password");
+				$("#password").attr("type","password");
+				yanjing.bind("click", mima1);
+				yanjing.unbind("click", mima2);
+			} ;
+			yanjing.on("click", mima2());
+			/*tab切换*/
+			function tab1(){
+				$(".login").addClass("active");
+				$(".regist").removeClass("active");
+				$(".login-form").show();
+				$(".regist-form").hide();
+			}
+			function tab2(){
+				$(".regist").addClass("active");
+				$(".login").removeClass("active");
+				$(".regist-form").show();
+				$(".login-form").hide();
+			}
+		</script>
+		<script type="text/javascript">
+			//登录
+			var refercode = GetQueryString("refercode");
+			var code = GetQueryString("code");
+			var ua = window.navigator.userAgent.toLowerCase();
+			var isWX = ua.match(/MicroMessenger/i) == 'micromessenger';
+			sessionStorage.setItem("refercode", refercode);
+			function checkPhone() {
+				var phone = $("#phone").val();
+				var psd = $("#psd").val();
+				var myreg = /^1[34578]\d{9}$/;
+				var flag = myreg.test(phone)
+				if(flag == false) {
+					$("#error-message").html("<span class='icon font_family icon-gantanhao'></span>请输入有效的手机号");
+					$("#button").attr('disabled', "true"); //添加disabled属性 
+				} else if(psd.length >= 6) {
+					$('#button').removeAttr("disabled"); //移除disabled属性 	
+				}
+			}
+			function checkPsd() {
+				var psd = $("#psd").val();
+				if(psd.length < 6) {
+					$("#button").attr('disabled', "true"); //添加disabled属性 
+				}else{
+					$('#button').removeAttr("disabled"); //移除disabled属性 	
+				}
+			}
+
+			function checkPhone1() {
+				$("#error-message").html("");
+			}
+            
+            var loUser = localStorage.getItem('a_phone');  
+	        var loPass = localStorage.getItem('a_psd'); 
+	        var rem = localStorage.getItem('a_rember');
+            $(document).ready(function(){
+		         
+                if (!isWX){
+                	//不是微信
+                	AutoLogin();	
+                }else{
+                	//微信
+//              	if(code == "" || code == null || code == undefined) {
+//	                	$.ajax({
+//						type: 'get',
+//						url: globel.ctx + apiconfig.connectReq_url,
+//						data: {refercode:refercode,role: 'Anchor'},
+//						dataType: 'json',
+//						beforeSend:function(){
+//							$(".loading").show();
+//						},
+//						success: function(json) {
+//							if(json.success == true) {
+//								location = json.body.connectReqUrl;
+//							}
+//						},
+//						complete:function(msg){ 
+//				      		$(".loading").hide();
+//				   		}
+//						})
+// 					}
+            	if(code != "" && code != null && code != undefined) {
+				$.ajax({
+					type: 'POST',
+					dataType: 'json',
+					async: true,
+					url: 'http://admin.bbohu.com/f/api/weixin/getAnchorWxId',
+					data: {
+						code:code
+					},
+					success: function(data) {
+						var oid = data.body.openid;
+						if(oid != "" && oid != null && oid != undefined){
+							sessionStorage.setItem("openid", data.body.openid);
+						}
+						if(data.success){//如果已绑定默认已登录
+							sessionStorage.setItem("token", data.body.token);
+							sessionStorage.setItem("usercode", data.body.usercode);
+							//location = htmlconfig.choose_role;
+							if(data.errorCode=="1"){
+		                		location = htmlconfig.anchor_index;
+		                	}
+		                	else if(data.errorCode=="2"){
+		                		location = htmlconfig.verify_status;
+		                	}
+		                	else if(data.errorCode=="3"){
+		                		window.location.assign(encodeURI(htmlconfig.certification+"?role=Anchor&name=" + data.body.name + "&idNo=" + data.body.idcard));
+		                		//location = htmlconfig.certification+"?role=Talent?";
+		                	}
+		                	else if(data.errorCode=="4"){
+	                        	location = htmlconfig.anchor_apply;
+	                        }
+		                	else if(data.errorCode=="9"){
+	                        	mui.alert('您的账号已被禁用,请联系管理员');
+	                        }
+						}else{//未绑定绑定微信
+		                 	AutoLogin();
+		            	}
+					}
+				});
+	        }
+                }
+            	
+         })
+            
+	        function AutoLogin(){
+            	if(rem=="yes") {
+				 if ((("" != loUser) || (null != loUser)) && (("" != loPass) || (null != loPass))) {
+	        		 	$("#phone").val(loUser);
+	        		 	$("#psd").val(loPass);
+		            	loginAjax($("#phone").val(),$("#psd").val())
+	        		 }	
+                   }
+            	}
+	        
+			function login() {
+				var phone = $("#phone").val();
+				var psd = $("#psd").val();
+				if (document.getElementById("isAutoLoginId").checked) {
+					localStorage.setItem('a_phone',phone); 
+				    localStorage.setItem('a_psd',psd); 
+				    localStorage.setItem('a_rember',"yes"); 
+				}else{
+					localStorage.removeItem('a_psd');
+				}
+				loginAjax(phone,psd);
+			}
+			function loginAjax(phone,psd){
+				$.ajax({
+					type: 'get',
+					url: globel.ctx + apiconfig.anchorLogin_url,
+					data: {
+						mobile: phone,
+						password: psd
+					},
+					dataType: 'json',
+					success: function(json) {
+						if(json.success == true) {
+							sessionStorage.setItem("token", json.body.token);
+							sessionStorage.setItem("usercode", json.body.usercode); 
+							//location = htmlconfig.choose_role;
+							if(json.errorCode=="1"){
+		                		location = htmlconfig.anchor_index;
+		                	}
+		                	//查看状态
+		                	else if(json.errorCode=="2"){
+		                		location = htmlconfig.verify_status;
+		                	}
+		                	//实名认证
+	                        else if(json.errorCode=="3"){
+		                		//location = htmlconfig.certification+"?role=Anchor";
+		                		window.location.assign(encodeURI(htmlconfig.certification+"?role=Anchor&name=" + json.body.name + "&idNo=" + json.body.idcard));
+		                	}
+	                        //报名 
+	                        else if(json.errorCode=="4"){
+	                        	location = htmlconfig.anchor_apply;
+	                        }
+						}else {
+							$("#error-message").html("<span class='icon font_family icon-gantanhao'></span>"+json.msg);
+						}
+					}
+				})
+			}
+			/*自动登录字体颜色控制*/
+			$("#isAutoLoginId").change(function(){
+				var check=$("#isAutoLoginId").prop("checked");
+				console.log(check)
+				if(check){
+					$("#isAutoLoginId").parent().css("color","#303030")
+				}else{
+					$("#isAutoLoginId").parent().css("color","#bbbbbb")
+				}
+			})
+			//注册
+			var canRegister = {
+					mobile: false,
+					password: false,
+					validcode: false
+				}
+			if(/^1[34578]\d{9}$/.test($('#mobile').val())){
+				canRegister.mobile = true;
+				$('#validCodeBtn').removeAttr('disabled');
+			}
+			if($('#validateCode').val().length == 4){
+				canRegister.validcode = true;
+			}
+			$(function() {
+				
+				var registerBtn = $('#registBtn');
+
+				init();
+
+				function init() {
+					bindEvent();
+					checkRegister()
+				}
+
+				var countdown = 60;
+
+				function settime() {
+					if(countdown == 0) {
+						$('#validCodeBtn').removeAttr('disabled');
+						$('#validCodeBtn').html("获取验证码");
+						countdown = 60;
+						return false;
+					} else {
+						$('#validCodeBtn').attr('disabled','disabled');
+						$('#validCodeBtn').html("重新发送(" + countdown + ")");
+						countdown--;
+					}
+					setTimeout(function() {
+						settime();
+					}, 1000);
+				}
+
+				//  事件绑定
+				function bindEvent() {
+					$("input").focus(function() {
+						$("#errorDiv").css("visibility", "hidden"); //把label的内容清空！  
+					});
+					//  输入框输入监听
+					$('#registForm').on('input propertychange', checkRegister);
+
+					var username = $('#mobile'),
+						password = $('#password'),
+						validcode = $('#validateCode'),
+						pattern = /^1[34578]\d{9}$/;
+
+					username.on('input propertychange', function() {
+						var $this = $(this),
+							_val = $this.val();
+						canRegister.mobile = pattern.test(_val);
+						if(canRegister.mobile) {
+							$('#validCodeBtn').removeAttr('disabled');
+//							$("#validCodeBtn").attr('disabled', "");
+						} else {
+							$('#validCodeBtn').attr('disabled','disabled');
+//							$("#validCodeBtn").attr('disabled', "disabled");
+						}
+					})
+					password.on('input propertychange', function() {
+						var $this = $(this),
+							_val = $this.val();
+						canRegister.password = _val.length > 5 && _val.length < 20 ;
+		
+					})
+					
+					validcode.on('input propertychange', function() {
+						var $this = $(this),
+							_val = $this.val();
+						canRegister.validcode = _val.length == 4;
+					})
+
+					$('#validCodeBtn').on('click', function() {
+						//module.layerLoading.open();
+						$.ajax({
+							url: globel.ctx + apiconfig.sendSms_url,
+							data: {
+								mobile: username.val(),
+								ischeck:true
+							},
+							type: 'POST',
+							success: function(res) {
+								if(res.success == true && res.msg == 'OK') {
+									settime();
+								} else {
+									if(res.errorCode =='1'&& isWX){
+										$("#mymark").show();
+										$("#markbox").show();
+									}else{
+										$('#errormsg').html("<span class='icon font_family icon-gantanhao'></span>"+res.msg);
+										$("#errorDiv").css("visibility", "visible");
+									}
+								}
+							},
+							error: function(){
+								//settime();
+								$('#errormsg').html("<span class='icon font_family icon-gantanhao'></span>出现错误，请重试");
+								$("#errorDiv").css("visibility", "visible");
+							}
+						})
+						return false
+					})
+
+					//  注册
+					registerBtn.on('click', function() {
+						var openid=sessionStorage.getItem("openid");
+						$.ajax({
+							url: globel.ctx + apiconfig.regiser_url,
+							data: {
+								mobile: username.val(),
+								password: password.val(),
+								validCode: validcode.val(),
+								weixin_operid:openid
+							},
+							type: 'POST',
+							async:false,
+							success: function(res) {
+								if(res.success) {
+									alert("注册成功");
+									sessionStorage.setItem("token", res.body.token);
+									location.href = htmlconfig.anchor_apply;
+								} else if(res.msg == "registed") {
+									alert("用户已注册,请登录");
+									//location.href = htmlconfig.login + "?mobile=" + username.val();
+									tab1();
+									return;
+								}
+								$('#errormsg').html("<span class='icon font_family icon-gantanhao'></span>" + res.msg);
+								$("#errorDiv").css("visibility", "visible");
+							},
+							error: function() {
+								$('#errormsg').html("<span class='icon font_family icon-gantanhao'></span>出现错误，请重试");
+								$("#errorDiv").css("visibility", "visible");
+							}
+						})
+						return false
+					})
+				}
+				//  是否禁用注册按钮
+				function checkRegister() {
+					(canRegister.mobile  && canRegister.password && canRegister.validcode ) ? registerBtn[0].disabled = false: registerBtn[0].disabled = true;
+				}
+			})			
+			
+			//微信登录
+			function wxlogin(){
+				var openId = sessionStorage.getItem("openid");
+				if(openId != "" && openId != null && openId != 'null'){
+					$.ajax({
+					type: 'POST',
+					dataType: 'json',
+					async: false,
+					url: 'http://admin.bbohu.com/f/api/weixin/wxLogin',
+					data: {
+						openid:openId,
+						role : 'Anchor'
+					},
+					success: function(data) {
+						//sessionStorage.setItem("openid", data.body.openid);
+						if(data.success){//如果已绑定默认已登录
+							sessionStorage.setItem("token", data.body.token);
+							sessionStorage.setItem("usercode", data.body.usercode);
+							//location = htmlconfig.choose_role;
+							if(data.errorCode=="1"){
+		                		location = htmlconfig.anchor_index;
+		                	}
+		                	else if(data.errorCode=="2"){
+		                		location = htmlconfig.verify_status;
+		                	}
+		                	else if(data.errorCode=="3"){
+		                		window.location.assign(encodeURI(htmlconfig.certification+"?role=Anchor&name=" + data.body.name + "&idNo=" + data.body.idcard));
+		                		//location = htmlconfig.certification+"?role=Talent?";
+		                	}
+		                	else if(data.errorCode=="4"){
+	                        	location = htmlconfig.anchor_apply;
+	                        }
+						}else{//未绑定绑定微信
+							//location = htmlconfig.bind_weixin+"?Role=anchor";
+							tab2();
+		            } 
+					}
+				});
+				}else if( !isWX){
+					alert("请在微信浏览器中打开")
+				}
+				
+//					
+				
+//				if(isWX){
+//					tab2();
+//				}else{
+//					alert("请在微信浏览器中打开")
+//				}
+			}
+			
+			function weixinBind(){
+				location = htmlconfig.bind_weixin+"?Role=anchor";
+			}
+			
+			function cancelBind(){
+				$("#mymark").hide(); 
+				$("#markbox").hide();
+			}
+		</script>
+   <!--footer-->
+	</body>
+
+</html>
+<!--footerend-->

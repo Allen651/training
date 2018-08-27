@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.exam.dao.examresult.ExamineDao">
+    
+	<sql id="examineColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.used_time AS "usedTime",
+		a.exam_result AS "examResult",
+		a.exam_time AS "examTime",
+		a.course_id AS "courseId"
+	</sql>
+	
+	<sql id="examineJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="Examine" >
+		SELECT 
+			<include refid="examineColumns"/>
+		FROM train_examine a
+		<include refid="examineJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Examine" >
+		SELECT 
+			<include refid="examineColumns"/>
+		FROM train_examine a
+		<include refid="examineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findExamList" resultType="com.jeeplus.modules.api.model.ExamineModel" >
+		SELECT 
+			a.id AS "examine.id",
+			a.create_by AS "examine.createBy.id",
+			a.create_date AS "examine.createDate",
+			a.update_by AS "examine.updateBy.id",
+			a.update_date AS "examine.updateDate",
+			a.remarks AS "examine.remarks",
+			a.del_flag AS "examine.delFlag",
+			a.user_id AS "examine.userId",
+			a.used_time AS "examine.usedTime",
+			a.exam_result AS "examine.examResult",
+			a.exam_time AS "examine.examTime",
+			a.course_id AS "examine.courseId",
+			z.`name` AS "anchorName",
+			c.course_name AS "courseName"
+		FROM train_examine a ,train_course c,zhaomu_anchor_info z
+		LEFT JOIN sys_office office ON z.company = office.id
+		<where>
+		    a.course_id = c.id and a.user_id = z.user_id 
+		    and z.del_flag = '0'
+			and a.del_flag = '0'
+			<if test="courseName != null and courseName != ''">
+				AND c.course_name LIKE
+				    <if test="examine.dbName == 'oracle'">'%'||#{courseName}||'%'</if>
+					<if test="examine.dbName == 'mssql'">'%'+#{courseName}+'%'</if>
+					<if test="examine.dbName == 'mysql'">concat('%',#{courseName},'%')</if>
+			</if>
+			<if test="anchorName != null and anchorName != ''">
+				AND z.name LIKE
+				    <if test="examine.dbName == 'oracle'">'%'||#{anchorName}||'%'</if>
+					<if test="examine.dbName == 'mssql'">'%'+#{anchorName}+'%'</if>
+					<if test="examine.dbName == 'mysql'">concat('%',#{anchorName},'%')</if>
+			</if>
+		<!-- 数据范围过滤 -->
+		 ${examine.sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Examine" >
+		SELECT 
+			<include refid="examineColumns"/>
+		FROM train_examine a
+		<include refid="examineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_examine(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			used_time,
+			exam_result,
+			exam_time,
+			course_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{usedTime},
+			#{examResult},
+			#{examTime},
+			#{courseId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_examine SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			used_time = #{usedTime},
+			exam_result = #{examResult},
+			exam_time = #{examTime},
+			course_id = #{courseId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_examine
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_examine SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Examine" statementType="STATEMENT">
+		select * FROM train_examine  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询课程考试的答题正确数量 -->
+	<select id="findRightNum" resultType="Integer">
+	    select count(1) from train_exam_questions q , train_examine_detail d
+		where d.question_id = q.id
+		and q.course_id = #{courseId}
+		and d.user_id = #{userId}
+		and d.is_right ='1'
+	</select>
+	
+	<!-- 获取成绩排行榜 -->
+	<select id="getResultRank" resultType="com.jeeplus.modules.api.model.AnchorModel">
+	    select a.`name` AS "name",
+	    a.sex AS "sex",
+	    a.play_platform AS "playPlatform",
+	    a.head_picture AS "headPicture",
+	    SUM(exam_result) AS "sumResult" 
+		from train_examine e , zhaomu_anchor_info a
+		where e.user_id = a.user_id
+		and a.del_flag = '0'
+		and a.company = #{company}
+		GROUP BY e.user_id 
+		ORDER BY SUM(exam_result) desc
+	</select>
+	
+	<select id="findExamRecord" resultType="Examine">
+	SELECT e.*,c.course_name FROM `train_examine` e ,train_course c where e.course_id = c.id and e.user_id=#{userid};
+	</select>
+	
+	<select id="findExamUser" resultType="Double">
+		SELECT  SUM(exam_result)  FROM `train_examine`  where user_id=#{userid};
+	</select>
+	
+	<select id="getExamByUserId" resultType="Examine">
+	SELECT e.*,c.course_name FROM `train_examine` e ,train_course c where e.course_id = #{0} and e.user_id=#{1};
+	</select>
+</mapper>

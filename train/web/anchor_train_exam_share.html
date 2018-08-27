@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>恭喜结业</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>	
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content examshare">
+			<div class="content">
+				<div class="content-w">
+					恭喜 <span id="username"></span> 在<strong>杰夫互娱</strong>-王牌主播培训计划中完成了所有课程，现授予王者主播称号，准予毕业！
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			var content=document.getElementsByClassName("content")[0];
+			autodivheight(content);
+			var newheight=$('.content').height();
+			$('.content').css({"height":newheight+"px"})
+			
+			var name = GetQueryString("name");
+			$("#username").html(name);
+		</script>
+	</body>
+</html>

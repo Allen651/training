@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.VideoDao">
+    
+	<sql id="videoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.video_name AS "videoName",
+		a.video_duration AS "videoDuration",
+		a.video_id AS "videoId",
+		a.video_image AS "videoImage",
+		a.lesson_id AS "lesson.id",
+		lesson.lesson_name AS "lesson.lessonName",
+		lesson.sort AS "lesson.sort",
+		course.id AS "lesson.course.id",
+		course.course_name AS "lesson.course.courseName"
+	</sql>
+	
+	<sql id="videoJoins">
+		LEFT JOIN train_lesson lesson ON lesson.id = a.lesson_id
+		LEFT JOIN train_course course ON lesson.course_id = course.id
+	</sql>
+	
+    
+	<select id="get" resultType="Video" >
+		SELECT 
+			<include refid="videoColumns"/>
+		FROM train_video a
+		<include refid="videoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Video" >
+		SELECT 
+			<include refid="videoColumns"/>
+		FROM train_video a
+		<include refid="videoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="videoName != null and videoName != ''">
+				AND a.video_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{videoName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{videoName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{videoName},'%')</if>
+			</if>
+			<if test="lesson != null and lesson.id != null and lesson.id != ''">
+				AND a.lesson_id = #{lesson.id}
+			</if>
+			<if test="lesson != null and lesson.course != null and lesson.course.id != null and lesson.course.id !=''">
+				AND course.id = #{lesson.course.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY lesson.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Video" >
+		SELECT 
+			<include refid="videoColumns"/>
+		FROM train_video a
+		<include refid="videoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_video(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			video_name,
+			video_duration,
+			video_id,
+			video_image,
+			lesson_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{videoName},
+			#{videoDuration},
+			#{videoId},
+			#{videoImage},
+			#{lesson.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_video SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			video_name = #{videoName},
+			video_duration = #{videoDuration},
+			video_id = #{videoId},
+			video_image = #{videoImage},
+			lesson_id = #{lesson.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_video
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_video SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Video" statementType="STATEMENT">
+		select * FROM train_video  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findListBylesson" resultType="Lesson">
+		SELECT 
+			*
+		FROM train_lesson a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="lessonName != null and lessonName != ''">
+				AND a.lessonName LIKE 
+				<if test="dbName == 'oracle'">#{lessonName}||'%'</if>
+				<if test="dbName == 'mssql'">#{lessonName}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{lessonName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findVideoByLesson" resultType="Video">
+		select * from train_video 
+		where lesson_id = #{lessonId}
+	</select>
+	
+</mapper>

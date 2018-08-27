@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+		<title>课程详情</title>
+		<!--<link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.5.0/skins/default/aliplayer-min.css" />
+		<script type="text/javascript" src="https://g.alicdn.com/de/prismplayer/2.5.0/aliplayer-min.js"></script>-->
+		<link rel="stylesheet" href="//g.alicdn.com/de/prismplayer/2.5.1/skins/default/aliplayer-min.css">
+		<script type="text/javascript" src="https://g.alicdn.com/de/prismplayer/2.5.1/aliplayer-min.js?54ca4bdc2ec82ba55104"></script>
+		<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+		</script>
+	</head>
+
+	<body style="margin: 0;">
+		<!--<div>
+			<p><input type="button" id="currentTime" value="当前播放时间" onClick="getcurrentTime()" /></p>
+			<p><input type="button" id="totalTime" value="总播放时间" onClick="gettotalTime()" /></p>
+			<p><input type="button" id="totalTime" value="页面离开" onClick="pageUnload()" /></p>
+		</div>-->
+		<div class="playerbox" style="background-color:#303030;">
+			<div class="prism-player" id="J_prismPlayer" style="position: relative;top: 50%;transform: translateY(-50%);"></div>
+			<!--<div class="prism-player" id="J_prismPlayer"></div>-->
+		</div>
+		
+		<script>
+			mui.init();
+			var pbox=document.getElementsByClassName("playerbox")[0];
+			autodivheight(pbox);
+			
+			var standard;
+			var IntervalName;
+			var player;
+			var currentTime = GetQueryString('currentTime');
+			var currentIndex = GetQueryString('currentIndex');
+			var type = GetQueryString('type');
+			var vid = GetQueryString('vid');
+			var courseSort = GetQueryString('courseSort');
+			var lessonSort = GetQueryString('lessonSort');
+			//var progress = GetQueryString('progress');
+			
+			var height = window.innerHeight+"px";
+			var screenh=window.innerHeight||body.height;
+			var screenw=window.innerWidth||body.width;
+			var ajaxSuccess = false;
+			var ajaxFailNum = 0;
+			var seek = true;
+			//alert(currentTime)
+			//alert(progress)
+			getPlayauth(vid);
+			getCourseInfo();
+			player = new Aliplayer({
+				id: 'J_prismPlayer',
+				width: '100%',
+				height:'100%',
+				videoWidth:'100%',
+				videoHeight:'100%',
+				autoplay: true,
+				playsinline:true,
+				controlBarVisibility: 'click',
+				showBarTime:'1500',
+				x5_type:'h5',
+				x5_video_position:'center',
+				format:'m3u8',
+				//isLive:true,
+				//播放方式二：点播用户推荐
+				skinLayout:[
+				    {name: "bigPlayButton", align: "blabs", x: screenw*0.5, y:screenh*0.5},
+				    {name: "H5Loading", align: "cc"},
+				    {name: "errorDisplay", align: "tlabs", x: 0, y: 0},
+				    {name: "infoDisplay", align: "cc"},
+				    {
+				      name: "controlBar", align: "blabs", x: 0, y: 0,
+				      children: [
+				        {name: "playButton", align: "tl", x: 15, y: 12},
+				        {name: "timeDisplay", align: "tl", x: 10, y: 7}
+				      ]
+				    }
+				  ],
+				vid: vid, 
+				playauth: auth
+			}, function(player) {
+				console.log('播放器创建好了。')
+				setTimeout(function(){
+					initPlayerEvent();
+				})
+				
+				setTimeout(function(){
+					//$('.prism-player .prism-big-play-btn').click();
+					autoPlay();
+					/*setTimeout(function(){
+						seek = false;
+						if(currentTime!=null && currentTime!=undefined && currentTime!=''&&currentTime!=0){
+		                	player.seek(currentTime);
+		                }else if(!isNaN(standard.progress) && standard.progress<1){
+		                	//alert(standard.course.lessonList[0].video.videoDuration*standard.progress)
+			            	player.seek(standard.course.lessonList[0].video.videoDuration*standard.progress);
+		                }
+					},1500)*/
+				},2000)
+				
+			});
+			function autoPlay() {
+	            wx.config({
+	                // 配置信息, 即使不正确也能使用 wx.ready
+	                debug: false,
+	                appId: '',
+	                timestamp: 1,
+	                nonceStr: '',
+	                signature: '',
+	                jsApiList: []
+	            });
+	            wx.ready(function() {
+	                var video=$(player.el()).find('video')[0];
+	                video.play();
+	            });
+		  	};
+			$(".prism-big-play-btn").css({"transform":"translate(-50%,50%)"});
+			
+			/*var setLayout = function()
+			{    
+			    //设置播放器容器的高度
+			    var height ; //根据实际情况设置高度
+			    player.el().style.height = window.innerHeight();
+			}*/
+			window.onresize = function(){
+				setTimeout(function(){
+					var winh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+					$('.playerbox').height(winh) 
+				},200)
+			}
+			/*player.on("requestFullScreen", function(){
+				alert('full')
+			    setLayout();
+			});
+			player.on("x5requestFullScreen", function(){
+				alert('x5')
+			    setLayout();
+			});*/
+			function getPlayauth(videoId){
+				$.ajax({
+					type:"post",
+					url:globel.ctx + apiconfig.getPlayauth_url,
+					data:{videoId:videoId, token:globel.token},
+					async:false,
+					success:function(res){
+						auth = res.body.playAuth;
+					}
+				});
+			}
+			function pause(){
+				player.pause();
+			}
+			function onPlay(){
+				if(isNaN(standard.progress) || standard.progress==0 || standard.progress==1){
+					if(player.getCurrentTime() == 0) {
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + 'f/api/saveHasCourse',
+							dataType: 'json',
+							data: {
+								token: globel.token,
+								type: type,
+								courseid: standard.course.id,
+								lessonid: standard.course.lessonList[0].id,
+								studytime: 0,
+								studyhaving: 0.001 //学习总时长,在后台进行进度计算 
+							},
+							success: function(res) {
+								if(res.success == true) {
+								}
+							}
+						})
+					} 
+				}
+				
+				IntervalName = setInterval(function () {
+					if(player.getCurrentTime() != 0) {
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + 'f/api/saveHasCourse',
+							dataType: 'json',
+							data: {
+								token: globel.token,
+								type: type,
+								courseid: standard.course.id,
+								lessonid: standard.course.lessonList[0].id,
+								studytime: player.getCurrentTime(),    
+								studyhaving: player.getDuration()
+							},
+							success: function(res) {
+								if(res.success == true) {
+								}
+							}
+						})
+					}
+				}, 5000); 
+			}
+			function initPlayerEvent(){
+				player.on('play', onPlay);
+				player.on('pause', function() {
+					clearInterval(IntervalName);
+				});
+				player.on('canplaythrough',function  (e) {
+					if(seek){
+						var seekTime = standard.course.lessonList[0].video.videoDuration*standard.progress;
+						if(currentTime!=null && currentTime!=undefined && currentTime!=''&&currentTime!=0){
+							if(currentTime > seekTime){
+								player.seek(currentTime);
+							}else{
+								player.seek(seekTime);
+								mui.toast('从上次离开时开始播放');
+							}
+                		}else if(!isNaN(standard.progress) && standard.progress<1 && standard.progress>0){
+                			player.seek(seekTime);
+                			mui.toast('从上次离开时开始播放');
+                			setTimeout(function(){
+						    	mui.toast('本课程还有'+standard.studyPlace+'次学习机会');
+						    },'2000')
+						}else{
+							mui.toast('本课程还有'+standard.studyPlace+'次学习机会');
+						}
+						seek = false;
+					}
+				});
+				player.on('ended',function(){
+					//标准课程播放结束后,观看次数减一 
+					ajaxSuccess = false;
+					if(standard.course.courseType.type ==1){
+						while( !ajaxSuccess && ajaxFailNum < 3){
+							reduceNum();
+						}
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + 'f/api/isTestandNotReward',
+							dataType: 'json',
+							data: {
+								token: globel.token,
+								lessonid: standard.course.lessonList[0].id,
+								courseid: standard.course.id
+							},
+							success: function(res) {
+								if(res.success == true) {
+									/*alert("成功了嘛")*/
+								}
+							}
+						})
+					}
+					
+				})
+			}
+			
+			function reduceNum(){
+				$.ajax({
+						type: 'get',
+						url: globel.ctx + 'f/api/reduceNum',
+						dataType: 'json',
+						async:false,
+						data: {
+							token: globel.token,
+							lessonid: standard.course.lessonList[0].id
+						},
+						success: function(res) {
+							if(res.success == true) {
+								standard.playnum = res.body.playsum.playNum
+								studyFinished = true;
+								ajaxSuccess = true;
+								if(standard.studyPlace>0){
+									standard.studyPlace--;
+								}
+								studyComplete(true);
+							}
+						},
+						error:function(){
+							ajaxFailNum ++;
+							mui.alert('网络异常，学习记录更新失败,请刷新重试');
+						}
+					})
+			}
+			function reStudy(num){
+				if(num<=0){
+					$(".prism-big-play-btn").css('display','none');
+					$(".prism-play-btn").css('display','none');
+					var btnArray = ['取消', '申请'];
+					mui.confirm('本课程学习次数已用完，是否向经纪人申请重学？','申请',btnArray,function(e){
+						if (e.index == 1) {
+							mui.toast('已申请')
+							$.ajax({
+									type: 'post',
+									url:globel.ctx + 'f/api/applicationStudy',
+									dataType: 'json',
+									data:{
+										token:globel.token,
+										/*lessonname:stage.lessonname,*/
+										lessonName:standard.course.lessonList[0].id,
+										index:currentIndex
+										},
+									success: function(res) {
+										if(res.success == true) {
+										}
+									}
+								})
+							$('#study').removeAttr('onclick');
+							$('#studyDiv').addClass('disabled');
+						}
+					})
+					
+					//$('#study').removeAttr('onclick');
+					//$('#studyDiv').addClass('disabled');
+				}else{
+					player.play(); 
+				}
+			}
+			function studyComplete(check){
+				if(standard.studyPlace==0 && check){
+					player.off('play',onPlay);
+					player.on('play',pause);
+				}
+				if(standard.studyPlace==0){
+					$(".prism-big-play-btn").css('display','none');
+					$(".prism-play-btn").css('display','none');
+				}
+				//标准课程最后一节
+				if(true == standard.end){
+					if(true == standard.hasExam && standard.examed==null){
+						var btnArray = ['重学('+standard.studyPlace+')', '去考试'];
+						mui.confirm('本课程已学完，是否进入考试？','已完成',btnArray,function(e){
+							if (e.index == 1) {
+								sessionStorage.setItem("courseid",standard.course.id);
+								location = htmlconfig.anchor_train_test_paper;
+							}
+							if (e.index == 0){
+								reStudy(standard.studyPlace);
+								return;
+							}
+						})
+					}else{
+						var btnArray = ['取消', '重学('+standard.studyPlace+')'];
+						mui.confirm('本课程已学完，是否重学？','已完成',btnArray,function(e){
+							if (e.index == 1) {
+								reStudy(standard.studyPlace);
+								return;
+							}
+						})
+					}
+				//本课程最后一节
+				}else if(true == standard.isLast){
+					if(true == standard.hasExam && standard.examed==null){
+						var btnArray = ['重学('+standard.studyPlace+')', '去考试'];
+						mui.confirm('本课程已学完，是否进入考试？','已完成',btnArray,function(e){
+							if (e.index == 1) {
+								sessionStorage.setItem("courseid",standard.course.id);
+								location = htmlconfig.anchor_train_test_paper;
+							}
+							if (e.index == 0){
+								reStudy(standard.studyPlace);
+							}
+						})
+					}else{
+						var btnArray = ['重学('+standard.studyPlace+')', '下一课'];
+						mui.confirm('本课程已学完，是否进入下一课？','已完成',btnArray,function(e){
+							if (e.index == 1) {
+								location = htmlconfig.anchor_course_details+"?courseSort="+(parseInt(courseSort)+1)+"&type="+type+"&lessonSort=1";
+							}
+							if (e.index == 0){
+								reStudy(standard.studyPlace);
+							}
+						})
+					}
+				}else{
+					var btnArray = ['重学('+standard.studyPlace+')', '下一节'];
+					mui.confirm('本小节已学完，是否进入下一节？','已完成',btnArray,function(e){
+						if (e.index == 1) {
+							location = htmlconfig.anchor_course_details+"?courseSort="+courseSort+"&type="+type+"&lessonSort="+(parseInt(lessonSort)+1);
+						}
+						if (e.index == 0){
+							reStudy(standard.studyPlace);
+						}
+					});
+				}
+			}
+			function getCourseInfo(){
+				$.ajax({
+					type:"post",
+					url:globel.ctx + apiconfig.getCourseInfo_url,
+					data:{
+						token:globel.token,
+						 type: type,
+						 courseSort: courseSort,
+						 lessonSort: lessonSort
+					},
+					async:false,
+					success:function(res){
+						standard = new Vue({ 
+							el:'#course',
+							data:{  
+								course:res.body.course,dir:"",
+								type:type, 
+								isLast:res.body.isLast,
+								hasExam:res.body.hasExam,
+								studyPlace:parseInt(res.body.studyPlace),
+								examed:res.body.examed,
+								progress:Number(res.body.progress),
+								isStudy:Number(res.body.isStudy),
+								end:res.body.end
+							},
+							filters: {
+								urlFilter: function(value) {
+									if(!value) return ''
+									value = value.toString()
+									return globel.ctx + value.slice(1)
+								}
+							}});
+						/*if(type==1 && standard.studyPlace==0){
+							//$(".prism-big-play-btn").css('display','none');
+							//$(".prism-play-btn").css('display','none');
+							studyComplete(false);
+							$('#J_prismPlayer').append("<img width='100%' src='"+standard.course.lessonList[0].video.videoImage+"'/>")
+						}else{
+							if (/android/.test(ua)) {
+								initAndroidPlayer();
+							}else{
+								initIOSPlayer();
+							}
+							//initIOSPlayer();
+						}*/
+						
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

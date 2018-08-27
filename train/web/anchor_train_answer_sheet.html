@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>答题卡</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>	
+	</head>
+
+	<body>
+		<!--主体信息-->
+		<div class="mui-content dtk">
+			<div class="usetime" style="padding-top: 40px;font-size: 30px;padding-bottom: 15px;	color: #999999;background-color: white;text-align: center;">
+				<time id="usedTime" style="padding-bottom: 15px;border-bottom: 0.5px solid #dddddd;"></time>
+			</div>
+			<div class="result" id="answer_paper">
+				<ul class="answer">
+					<li v-for="(key,index) in len" v-on:click="backTest(index)">
+						<span class="question-number">{{key}}</span><br />
+						<span class="answer-option">{{sessionStorage.getItem(key)|urlFilter}}</span>
+					</li>
+					<!--<li>
+						<span class="question-number">2</span><br />
+						<span class="answer-option">C</span>
+					</li>
+					<li>
+						<span class="question-number">3</span><br />
+						<span class="answer-option">C</span>
+					</li>
+					<li >
+						<span class="question-number">4</span><br />
+						<span class="answer-option">D</span>
+					</li>
+					<li >
+						<span class="question-number">5</span><br />
+						<span class="answer-option">A</span>
+					</li>
+					<li >
+						<span class="question-number">6</span><br />
+						<span class="answer-option">B</span>
+					</li>
+					<li >
+						<span class="question-number">7</span><br />
+						<span class="answer-option"></span>
+					</li>
+					<li >
+						<span class="question-number">8</span><br />
+						<span class="answer-option">C</span>
+					</li>					
+					<li >
+						<span class="question-number">9</span><br />
+						<span class="answer-option">B</span>
+					</li>
+					<li >
+						<span class="question-number">10</span><br />
+						<span class="answer-option">D</span>
+					</li>
+					<li >
+						<span class="question-number">11</span><br />
+						<span class="answer-option">A</span>
+					</li>
+					<li >
+						<span class="question-number">12</span><br />
+						<span class="answer-option">C</span>
+					</li>
+					<li >
+						<span class="question-number">13</span><br />
+						<span class="answer-option">A</span>
+					</li>
+					<li >
+						<span class="question-number">14</span><br />
+						<span class="answer-option"></span>
+					</li>
+					<li >
+						<span class="question-number">15</span><br />
+						<span class="answer-option">A</span>
+					</li>
+					<li >
+						<span class="question-number">16</span><br />
+						<span class="answer-option">A</span>
+					</li>
+					<li >
+						<span class="question-number">17</span><br />
+						<span class="answer-option">C</span>
+					</li>
+					<li >
+						<span class="question-number">18</span><br />
+						<span class="answer-option">C</span>
+					</li>
+					<li >
+						<span class="question-number">19</span><br />
+						<span class="answer-option"></span>
+					</li>
+					<li >
+						<span class="question-number">20</span><br />
+						<span class="answer-option">A</span>
+					</li>-->
+				</ul>
+				<button id="subPaper" v-on:click="submit()">交卷</button>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			setTimeout(function() {
+				var answer = $(".answer-option");
+				var qustion = $(".question-number");
+				for(var i = 0; i < answer.length; i++) {
+					var html = answer.eq(i).html();
+					if(!html) {
+						qustion.eq(i).css({
+							"background-color": "#303030",
+							"border-color": "#303030",
+							"vertical-align": "32px"
+						})
+					}
+				}	
+			},100)
+		</script>
+		<script type="text/javascript">
+			var length = Number(sessionStorage.getItem("length"));
+			var courseid = sessionStorage.getItem('courseid');
+			var usedTime = sessionStorage.getItem("testTime");
+
+			function two_char(n) {
+				return n >= 10 ? n : "0" + n;
+			}
+			var sec = Number(usedTime);
+
+			function time_fun() {
+				var date = new Date(0, 0)
+					date.setSeconds(sec);
+					var h = date.getHours(),
+						m = date.getMinutes(),
+						s = date.getSeconds();
+					document.getElementById("usedTime").innerText = two_char(h) + ":" + two_char(m) + ":" + two_char(s);
+				setInterval(function() {
+					sec++;
+					var date = new Date(0, 0)
+					date.setSeconds(sec);
+					var h = date.getHours(),
+						m = date.getMinutes(),
+						s = date.getSeconds();
+					document.getElementById("usedTime").innerText = two_char(h) + ":" + two_char(m) + ":" + two_char(s);
+				}, 1000);
+			}
+			$(document).ready(time_fun)
+
+			$(document).ready(function() {
+				new Vue({
+					el: '#answer_paper',
+					data: {
+						len: length,
+					},
+					filters: {
+						urlFilter: function(value) {
+							if(!value) return ''
+							var answers = value.split(",");
+							var ans = "";							
+							for(i = 0; i < answers.length; i++) {
+								if(answers[i] == 0) {
+									ans += 'A';
+								} else if(answers[i] == 1) {
+									ans += 'B';
+								} else if(answers[i] == 2) {
+									ans += 'C';
+								} else if(answers[i] == 3) {
+									ans += 'D';
+								}
+							}
+							return ans
+						}
+					},
+					methods: {
+						submit: function() {
+							//拼接答案
+							var answer = "";
+							for(i = 1; i <= this.len; i++) {
+								var val = sessionStorage.getItem(i);
+								answer += i + ":" + val + "|";
+							}
+							//计算未答题目数量
+							var num = 0;
+							for(i = 1; i <= length; i++) {
+								if(sessionStorage.getItem(i) == null || sessionStorage.getItem(i) == "") {
+									num++;
+								};
+							}
+							if(num == 0) {
+								var title = '确认交卷？';
+							} else {
+								var title = '你还有' + num + '道题未答，确认交卷？';
+							}
+							var btnArray = ['取消', '确定'];
+							mui.confirm(title, '提示', btnArray, function(e) {
+								if(e.index == 1) {
+									//所用时间
+									sessionStorage.setItem("usetime", (document.getElementById("usedTime").innerText));
+									//清除session
+									for(i = 1; i <= length; i++) {
+										sessionStorage.removeItem(i);
+									}
+									sessionStorage.removeItem('testTime');
+									mui("#subPaper").button('loading');
+									$.ajax({
+										type: 'get',
+										url: globel.ctx + apiconfig.saveAnswer_url,
+										data: {
+											token: globel.token,
+											testData: answer,
+											courseId: courseid,
+											time: sec
+										},
+										dataType: 'json',
+										success: function(res) {
+											if(res.success == true) {
+												location = htmlconfig.anchor_train_exam_end + "?result=" + res.body.result;
+											} else {
+												mui.alert(res.msg)
+											}
+										}
+									})
+								} else {
+
+								}
+
+							})
+						},
+						backTest: function(index) {
+							sessionStorage.setItem("testTime", sec);
+							location = htmlconfig.anchor_train_test_paper + "?number=" + index;
+						}
+					}
+
+				});
+
+			})
+		</script>
+	</body>
+
+</html>

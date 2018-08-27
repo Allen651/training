@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>学霸排行榜</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+			dynamicLoading.js("/js/yearmonthCom.js");
+		</script>
+	</head>
+
+	<body> 
+		<!--主体-->
+		<div class="mui-content  paihangbang examp">
+			<!--头部tab-->
+			<div class="my-tab">
+				<div  id="studyRank" class="first active">学习排行</div>
+				<div  id="resultRank" class="second">成绩排行</div>
+				<div  id="zongpaihang" class="third" style="display:none;">总排行</div>
+			</div>
+			<div class="content-warp">
+			<!--<div><span class="slogan"><svg><polygon points="0,2.5 8,6 8,0 0,2.5" style="fill: gold;"></polygon></svg>掉车尾的家伙羞羞羞</span></div>-->
+			<!--学习排行-->
+			<ul class="mui-table-view content first-list" id="first-list" style="display:none;">
+				<li class="mui-table-view-cell mui-row" v-for="(item,index) in items">
+					<template v-if="index==0">
+						<svg class='icon mui-col-xs-1' aria-hidden='true'>
+							<use xlink:href='#icon-paihang_guanjun'></use>
+						</svg>
+						<span class="diyi">{{index+1}}</span>
+					</template>
+					<template v-else-if="index==1">
+						<svg class='icon mui-col-xs-1' aria-hidden='true'>
+							<use xlink:href='#icon-paihang_yajun'></use>
+						</svg>
+						<span class="diyi">{{index+1}}</span>
+					</template>
+					<template v-else-if="index==2">
+						<svg class='icon mui-col-xs-1' aria-hidden='true'>
+							<use xlink:href='#icon-paihang_jijun'></use>
+						</svg>
+						<span class="diyi">{{index+1}}</span>
+					</template>
+					<template v-else>
+						<span class="disi">{{index+1}}</span>
+					</template>
+					<div class="touxiang">
+						<img :src="_cdn_admin_path+item.headPicture" />
+					</div>
+					<div class="message mui-col-xs-5 mui-text-left">
+						<div>{{item.name}}</div>
+						<span>{{item.playPlatform|platformFilter}}</span>
+						
+					</div>
+					<div class="mui-pull-right mui-text-right">
+						<span>学习进度：{{item.stuProgress}}</span>
+						<!--<svg class="tubiao icon" aria-hidden="true">
+							<use xlink:href="#icon-paihang_shangsheng"></use>
+						</svg>
+						<sup style="color:red">5</sup>-->
+					</div>
+				</li>
+
+			</ul>
+			<!--成绩排行-->
+			<ul class="mui-table-view content  second-list" style="display:none;" id="second-list">
+				<li class="mui-table-view-cell mui-row" v-for="(item,index) in items">
+					<template v-if="index==0">
+						<svg class='icon mui-col-xs-1' aria-hidden='true'>
+							<use xlink:href='#icon-paihang_guanjun'></use>
+						</svg>
+						<span class="diyi">{{index+1}}</span>
+					</template>
+					<template v-else-if="index==1">
+						<svg class='icon mui-col-xs-1' aria-hidden='true'>
+							<use xlink:href='#icon-paihang_yajun'></use>
+						</svg>
+						<span class="diyi">{{index+1}}</span>
+					</template>
+					<template v-else-if="index==2">
+						<svg class='icon mui-col-xs-1' aria-hidden='true'>
+							<use xlink:href='#icon-paihang_jijun'></use>
+						</svg>
+						<span class="diyi">{{index+1}}</span>
+					</template>
+					<template v-else>
+						<span class="disi">{{index+1}}</span>
+					</template>
+					<div class="touxiang">
+						<img :src="_cdn_admin_path+item.headPicture" />
+					</div>
+					<div class="message mui-col-xs-5 mui-text-left">
+						<div>{{item.name}}</div>
+						<span>{{item.playPlatform|platformFilter}}</span>
+						
+					</div>
+					<div class="mui-pull-right mui-text-right">
+						<span>{{item.sumResult}}分</span>
+						<!--<svg class="tubiao icon" aria-hidden="true">
+							<use xlink:href="#icon-paihang_shangsheng"></use>
+						</svg>
+						<sup style="color:red">5</sup>-->
+					</div>
+				</li>
+			</ul>
+
+			<!--总排行-->
+			<ul class="mui-table-view content third-list" style="display:none;" id="third-list"></ul>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			window.onload = mmark();
+			var canvas = document.getElementsByClassName("sanjiao")[0];
+			var ctx = canvas.getContext("2d");
+			ctx.moveTo(8, 4);
+			ctx.lineTo(16, 12);
+			ctx.lineTo(0, 12);
+			ctx.fillStyle = "white";
+			ctx.fill();
+		</script>
+
+		<script type="text/javascript">
+			$(document).ready(getStudyRank);
+			$("#studyRank").click(getStudyRank);
+			/*
+			 * 学习排行
+			 */
+			function getStudyRank() {
+				new Vue({
+					el: '#first-list',
+					data: {
+						items: ""
+					},
+					filters: {
+						platformFilter: function(value){
+							return getPlatformLabel(value);
+						}
+					},
+					created: function() {
+						var _self = this;
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + apiconfig.studyRank_url,
+							dataType: 'json',
+							data: {
+								token: globel.token
+							},
+							success: function(res) {
+								if(res.success == true) {
+									_self.items = res.body.studyRank;
+									if(res.body.studyRank == null || res.body.studyRank == "") {
+										$("#first-list").html("<div class='my404'><img src='img/lack.png' /><div>暂无数据</div></div>")
+									}
+								} else {
+									$("#first-list").html("<div class='my404'><img src='img/lack.png' /><div>暂无数据</div></div>")
+								}
+							}
+						})
+					}
+				});
+				$("#studyRank").addClass("active").siblings().removeClass("active");
+				$(".content").eq(0).show().siblings().hide();
+			}
+
+			/*
+			 * 成绩排行
+			 */
+			$("#resultRank").click(function() {
+				new Vue({
+					el: '#second-list',
+					data: {
+						items: ""
+					},
+					filters: {
+						platformFilter: function(value){
+							return getPlatformLabel(value);
+						}
+					},
+					created: function() {
+						var _self = this;
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + apiconfig.scoreRank_url,
+							dataType: 'json',
+							data: {
+								token: globel.token
+							},
+							success: function(res) {
+								if(res.success == true) {
+									_self.items = res.body.resultRank;
+									if(res.body.resultRank == null || res.body.resultRank == "") {
+										$("#second-list").html("<div class='my404'><img src='img/lack.png' /><div>暂无数据</div></div>")
+									}
+								} else {
+									$("#second-list").html("<div class='my404'><img src='img/lack.png' /><div>暂无数据</div></div>")
+								}
+							}
+						})
+					}
+				});
+				$(this).addClass("active").siblings().removeClass("active");
+				$(".content").eq($(this).index()).show().siblings().hide();
+			})
+		</script>
+	</body>
+
+</html>

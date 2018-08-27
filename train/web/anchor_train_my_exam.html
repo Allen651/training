@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>我的考试</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>	
+	</head>
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content wdks">
+			<div class="exam-list" id="exam-list">
+				<ul id="licount" class="reexam" >
+					<template v-for="item in items">
+					<template v-if="item.result!=null">
+						<li>
+							<div class="box">
+								<div class="exam-cover imgbox">
+									<!--<img src="img/touxiangxx.jpg" />-->
+									<img :src="item.courseImg" />
+									<!--<img src="img/examcover.png" />-->
+								</div>
+								<div class="title">
+									<h2>{{item.courseName|leFilter}} </h2>
+									<span class="icon font_family icon-weimingming-zhuanhuan2"></span><span>已考完</span>
+									<p>{{item.courseBrief|lenFilter}}</p>
+								</div>
+							</div>
+							<div class="message">
+								<span class="icon font_family icon-weimingming-zhuanhuan1"></span><span>考试得分：{{item.result}}分</span>
+								<span class="icon font_family icon-weimingming-zhuanhuan"></span><span>正确率{{item.rightRate}}</span>
+								<span class="icon font_family icon-xingxing"></span><span>(满分{{item.sumPoint}}分)</span>							
+							</div>	
+						</li>
+					</template>
+					<template v-else-if="item.isFinish==1 && item.itemNum!=0">
+						<li class="unexam">
+							<div class="box">
+								<div class="exam-cover imgbox">
+									<img :src="item.courseImg" />
+								</div>
+								<div class="title">
+									<h2>{{item.courseName|leFilter}} </h2>
+									<span class="icon font_family icon-weimingming-zhuanhuan2"></span><span>未考试</span>
+									<p>{{item.courseBrief|lenFilter}}</p><br />
+									<button v-on:click="goTest(item.id)"><span class="icon font_family icon-weimingming-zhuanhuan1"></span>考试</button>
+								</div>
+							</div>
+						</li>
+					</template>
+					<template v-else>
+					</template>
+					</template>
+				</ul>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+		</script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				new Vue({
+					el: '#exam-list',
+					data: {
+						items: ""
+					},
+					created: function() {
+						var _self = this;
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + apiconfig.getMyCourse_url,
+							data: {
+								token: globel.token
+							},
+							dataType: 'json',
+							success: function(res) {
+								if(res.success == true) {
+									_self.items = res.body.course;
+								}
+							}
+						})
+					},
+					filters: {
+						lenFilter: function(value) {
+							if(!value) return ''
+							value = value.toString();
+							if(value.length > 12){
+								return value.substr(0,12)+"..."
+							}else{
+								return value;
+							}
+						},
+						leFilter: function(value) {
+							if(!value) return ''
+							value = value.toString();
+							if(value.length > 18){
+								return value.substr(0,18)+"..."
+							}else{
+								return value;
+							}
+						}
+					},
+					updated: function() {
+						imgCenter();
+						var linum = $('#licount li').length;
+						if(linum == 0) {
+							mui.alert("你还没有考试！");
+						}	
+					},
+					methods: {
+						goTest: function(courseid) {
+							sessionStorage.setItem('courseid', courseid);
+							location = htmlconfig.anchor_train_test_paper;
+						}
+					}
+
+			    });
+
+			})
+			setTimeout(function(){
+				imgCenter();
+			},500)
+		</script>
+	</body>
+
+</html>

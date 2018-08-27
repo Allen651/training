@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.mystudy.dao.TrainstudyDao">
+
+	<sql id="trainstudyColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS
+		"createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS
+		"updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id
+		AS "userid",
+		a.course_id AS "courseid",
+		a.lesson_id AS "lessonid",
+		a.study_progress AS "studyprogress",
+		a.study_time AS "studytime",
+		a.study_place AS "studyplace",
+		a.study_totalnum AS "studytotalnum",
+		a.is_study AS "isstudy",
+		a.givelike_staus AS "givelikeStaus",
+		a.is_ling
+		AS "isLing",
+		a.roles AS "roles"
+	</sql>
+
+	<sql id="trainstudyJoins">
+	</sql>
+
+	<sql id="studyJoins">
+		LEFT JOIN train_course course ON course.id = a.course_id
+		LEFT JOIN train_lesson lesson ON lesson.id = a.lesson_id
+		LEFT JOIN
+		train_course_type type ON type.id = course.course_type_id
+	</sql>
+
+
+	<select id="get" resultType="Trainstudy">
+		<!-- SELECT a.*, l.lesson_name AS "lessonname", c.course_name AS "coursename", 
+			anchor. NAME AS "anchorname", sum(te.exam_result) AS "examresult" FROM train_study 
+			a INNER JOIN ( SELECT max(create_date) AS max_time FROM train_study GROUP 
+			BY user_id ) b ON a.create_date = b.max_time AND a.del_flag = '0' LEFT JOIN 
+			train_lesson l ON a.lesson_id = l.id LEFT JOIN train_course c ON c.id = a.course_id 
+			LEFT JOIN zhaomu_anchor_info anchor ON a.user_id = anchor.user_id LEFT JOIN 
+			train_course_type tct ON tct.id = c.course_type_id AND tct.type = '1' LEFT 
+			JOIN train_examine te ON te.user_id = a.user_id WHERE a.id = #{id} GROUP 
+			BY te.user_id -->
+		SELECT
+		a.*, l.lesson_name AS "lessonname",
+		c.course_name AS "coursename",
+		anchor. NAME AS "anchorname",
+		sum(te.exam_result) AS "examresult"
+		FROM
+		train_study a
+		INNER JOIN (
+		SELECT
+		train_study.*,
+		max(train_study.create_date) AS max_time
+		FROM
+		train_study,train_course_type,train_course
+		where train_study.course_id = train_course.id and
+		train_course.course_type_id = train_course_type.id and
+		train_course_type.type='1'
+		GROUP BY
+		train_study.user_id
+		) b ON a.create_date = b.max_time
+		AND a.del_flag = '0'
+		LEFT JOIN train_lesson l ON a.lesson_id = l.id
+		LEFT JOIN train_course c ON
+		c.id = a.course_id
+		LEFT JOIN train_course_type tct ON tct.id =
+		c.course_type_id and tct.type='1'
+		LEFT JOIN zhaomu_anchor_info anchor
+		ON a.user_id = anchor.user_id
+		LEFT JOIN train_examine te ON te.user_id
+		= a.user_id WHERE a.id = #{id} GROUP BY te.user_id
+	</select>
+
+	<select id="getStudyedCourseNum" resultType="integer">
+		SELECT count(0)
+		FROM train_study a
+		<include refid="studyJoins" />
+		WHERE type.type = #{0} AND a.user_id = #{1}
+	</select>
+
+	<select id="findStudyingLessons" resultType="Trainstudy">
+		SELECT
+		<include refid="trainstudyColumns" />
+		FROM train_study a
+		<include refid="studyJoins" />
+		WHERE type.type = #{0} AND a.user_id = #{1} order by course.sort ASC,
+		lesson.sort ASC
+	</select>
+
+	<select id="findStudying" resultType="Double">
+
+		SELECT
+		COUNT(0)
+		FROM
+		`train_study` a
+		LEFT JOIN train_course course ON course.id = a.course_id
+		LEFT JOIN train_lesson lesson ON lesson.id = a.lesson_id
+		LEFT JOIN train_course_type type ON type.id = course.course_type_id
+		WHERE
+		type.type = #{0} AND a.user_id = #{1}
+
+
+	</select>
+
+
+	<select id="findListBy" resultType="Trainstudy">
+		SELECT
+		<include refid="trainstudyColumns" />
+		FROM train_study a
+		<include refid="trainstudyJoins" />
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="lessonid != null and lessonid != ''">
+				AND a.lesson_id = #{lessonid}
+			</if>
+			<if test="userid != null and userid != ''">
+				AND a.user_id = #{userid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+
+	<select id="findList" resultType="Trainstudy">
+		SELECT
+		a.*, l.lesson_name AS "lessonname",
+		c.course_name AS "coursename",
+		anchor.name AS "anchorname"
+		FROM
+		train_study a
+		INNER JOIN (
+		SELECT
+		train_study.*,
+		max(train_study.create_date) AS max_time
+		FROM
+		train_study,train_course_type,train_course
+		where train_study.course_id = train_course.id and
+		train_course.course_type_id = train_course_type.id and
+		train_course_type.type='1'
+		GROUP BY
+		train_study.user_id
+		) b ON a.create_date = b.max_time
+		AND a.del_flag = '0'
+		LEFT JOIN train_lesson l ON a.lesson_id = l.id
+		LEFT JOIN train_course c ON
+		c.id = a.course_id
+		LEFT JOIN train_course_type tct ON tct.id =
+		c.course_type_id and tct.type='1'
+		LEFT JOIN zhaomu_anchor_info anchor
+		ON a.user_id = anchor.user_id
+		where 1=1
+		<if test="anchorname != null and anchorname != ''">
+			and anchor.name like
+			<if test="dbName == 'oracle'">'%'||#{anchorname}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{anchorname}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{anchorname},'%')</if>
+		</if>
+		and a.roles = '0'
+		GROUP BY anchor.user_id
+		<!-- LEFT JOIN train_examine te ON te.user_id = a.user_id GROUP BY te.user_id -->
+		<!-- SELECT a.*, l.lesson_name AS "lessonname", c.course_name AS "coursename", 
+			anchor. NAME AS "anchorname", sum(te.exam_result) AS "examresult" FROM train_study 
+			a INNER JOIN ( SELECT max(create_date) AS max_time FROM train_study GROUP 
+			BY user_id ) b ON a.create_date = b.max_time AND a.del_flag = '0' LEFT JOIN 
+			train_lesson l ON a.lesson_id = l.id LEFT JOIN train_course c ON c.id = a.course_id 
+			LEFT JOIN zhaomu_anchor_info anchor ON a.user_id = anchor.user_id LEFT JOIN 
+			train_course_type tct ON tct.id = c.course_type_id AND tct.type = '1' LEFT 
+			JOIN train_examine te ON te.user_id = a.user_id GROUP BY te.user_id -->
+	</select>
+
+    <!-- 按权限查找学习列表 -->
+	<select id="findStuList" resultType="Trainstudy">
+		SELECT
+		a.*, l.lesson_name AS "lessonname",
+		c.course_name AS "coursename",
+		anchor.name AS "anchorname"
+		FROM
+		train_study a
+		INNER JOIN (
+		SELECT
+		train_study.*,
+		max(train_study.create_date) AS max_time
+		FROM
+		train_study,train_course_type,train_course
+		where train_study.course_id = train_course.id and
+		train_course.course_type_id = train_course_type.id and
+		train_course_type.type='1'
+		GROUP BY
+		train_study.user_id
+		) b ON a.create_date = b.max_time
+		AND a.del_flag = '0'
+		LEFT JOIN train_lesson l ON a.lesson_id = l.id
+		LEFT JOIN train_course c ON
+		c.id = a.course_id
+		LEFT JOIN train_course_type tct ON tct.id =
+		c.course_type_id and tct.type='1'
+		LEFT JOIN zhaomu_anchor_info anchor
+		ON a.user_id = anchor.user_id
+		LEFT JOIN sys_office office ON anchor.company = office.id
+		where 1=1
+		<if test="anchorname != null and anchorname != ''">
+			and anchor.name like
+			<if test="dbName == 'oracle'">'%'||#{anchorname}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{anchorname}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{anchorname},'%')</if>
+		</if>
+		and a.roles = '0'
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		GROUP BY anchor.user_id
+	</select>
+	
+	<select id="findAllList" resultType="Trainstudy">
+		SELECT
+		<include refid="trainstudyColumns" />
+		FROM train_study a
+		<include refid="trainstudyJoins" />
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO train_study(
+		id,
+		create_by,
+		create_date,
+		update_by,
+		update_date,
+		remarks,
+		del_flag,
+		user_id,
+		course_id,
+		lesson_id,
+		study_progress,
+		study_time,
+		study_place,
+		study_totalnum,
+		is_study,
+		givelike_staus,
+		is_ling,
+		roles
+		) VALUES (
+		#{id},
+		#{createBy.id},
+		#{createDate},
+		#{updateBy.id},
+		#{updateDate},
+		#{remarks},
+		#{delFlag},
+		#{userid},
+		#{courseid},
+		#{lessonid},
+		#{studyprogress},
+		#{studytime},
+		#{studyplace},
+		#{studytotalnum},
+		#{isstudy},
+		#{givelikeStaus},
+		0,
+		#{roles}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE train_study SET
+		update_by = #{updateBy.id},
+		update_date = #{updateDate},
+		remarks = #{remarks},
+		user_id = #{userid},
+		course_id = #{courseid},
+		lesson_id = #{lessonid},
+		study_progress = #{studyprogress},
+		study_time = #{studytime},
+		study_place = #{studyplace},
+		study_totalnum=#{studytotalnum},
+		is_study = #{isstudy},
+		givelike_staus = #{givelikeStaus},
+		is_ling=#{isLing},
+		roles = #{roles}
+		WHERE id = #{id}
+	</update>
+	<!-- 修改是否领取奖励 -->
+	<update id="setIsLing">
+		UPDATE train_study SET
+		is_ling = 1
+		WHERE id = #{id}
+	</update>
+	<!--物理删除 -->
+	<update id="delete">
+		DELETE FROM train_study
+		WHERE id = #{id}
+	</update>
+
+	<!--逻辑删除 -->
+	<update id="deleteByLogic">
+		UPDATE train_study SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+
+	<update id="updatele">
+		UPDATE train_study SET
+		givelike_staus = #{0}
+		WHERE lesson_id = #{1} and user_id=#{2}
+	</update>
+
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Trainstudy"
+		statementType="STATEMENT">
+		select * FROM train_study where ${propertyName} =
+		'${value}'
+	</select>
+
+	<select id="findUserLesson" resultType="Trainstudy">
+		select *
+		FROM train_study where user_id = #{0} and lesson_id = #{1}
+	</select>
+
+
+	<select id="findStudyList" resultType="Trainstudy">
+		SELECT
+		s.*, l.lesson_name,
+		v.video_image,
+		ct.name as coursetypename,
+		ct.type as type,
+		c.sort as courseSort,
+		l.sort as lessonSort
+		FROM
+		`train_study` s,
+		train_lesson l,
+		train_video v,
+		train_course c,
+		train_course_type ct
+		WHERE
+		s.lesson_id = l.id
+		AND l.id = v.lesson_id
+		AND c.course_type_id = ct.id
+		AND c.id = s.course_id
+		AND s.user_id = #{userid}
+		and ct.type='1' order by s.create_date desc
+	</select>
+
+	<!-- 查询课程最后章节的学习进度 -->
+	<select id="findCourseProgress" resultType="Trainstudy">
+		select * from train_study
+		where lesson_id = #{lessonId}
+		and user_id = #{userId}
+	</select>
+
+	<!-- 查询课程的最后一个章节（视频） -->
+	<select id="findLastLesson" resultType="com.jeeplus.modules.course.entity.Lesson">
+		select * from train_lesson
+		where course_id = #{courseId}
+		ORDER BY sort desc
+		LIMIT 1
+	</select>
+
+	<!-- 同意重学 -->
+	<update id="updateSyudyPlace">
+		UPDATE train_study SET study_place = #{0} where
+		user_id=#{1} and lesson_id=#{2}
+	</update>
+
+	<select id="getProgress" resultType="Trainstudy">
+		SELECT
+		<include refid="trainstudyColumns" />
+		FROM train_study a
+		<include refid="studyJoins" />
+		WHERE type.type = 1 AND a.user_id = #{id} AND type.id = #{typeId}
+		AND a.is_study = 1 order by course.sort DESC, lesson.sort DESC
+	</select>
+
+	<!-- 获取学习排行榜 -->
+	<select id="getStudyRank" resultType="com.jeeplus.modules.api.model.AnchorModel">
+		select a.`name` AS "name",
+		a.sex AS "sex",
+		a.play_platform AS "playPlatform",
+		a.head_picture AS "headPicture",
+		COUNT(1) AS "studyNum"
+		from train_study s , zhaomu_anchor_info a
+		where s.user_id = a.user_id
+		and s.is_study='1'
+		and a.del_flag='0'
+		and a.company = #{company}
+		GROUP BY s.user_id
+		ORDER BY studyNum DESC
+	</select>
+
+	<select id="findStudyNumByLesson" resultType="int">
+		select count(0)
+		from train_study a
+		where a.lesson_id = #{0} and a.is_study = '1'
+	</select>
+
+	<select id="getMaxCourseId" resultType="Trainstudy">
+		SELECT a.* from (
+		select b.*,MAX(create_date) from train_study b where user_id = #{userId} and course_id = #{courseId} GROUP BY
+		b.create_date desc) a GROUP BY user_id
+	</select>
+</mapper>

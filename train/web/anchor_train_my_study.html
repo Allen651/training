@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>我的学习</title>
+		<!--复用我得考试-->
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+			<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content wdxx">
+			<!--课程列表-->
+			<ul class="mui-table-view course-list" >
+				<li class="mui-table-view-cell" > 
+					<div class="mui-collapse-content">
+						<ul class="reexam" id="courselist">
+							<li v-for="(stage,index) in pes">
+								<div class="title">
+									<div class="course-img">
+										<img :src="stage.videoImage" />
+										<div class="times">
+											<span>{{stage.studyplace}}</span>/{{stage.studytotalnum}}次
+										</div>										
+									</div>
+									
+									<div>
+										<h2>{{stage.lessonname}}</h2>
+										<p>当前进度 <span id="abc">{{parseInt(stage.studyprogress*100)}}%</span></p>
+									</div>
+									<template v-if="stage.studyplace < stage.studytotalnum && stage.studyprogress ==1 && stage.studyplace != 0">
+									<button class="reexam-btn mui-pull-right" style="background: #444444;" @click="goStudy(stage.studyprogress,stage.type,stage.courseSort,stage.lessonSort,stage.userid)">重新学习</button>
+									</template>
+									
+									
+									<template v-else-if="stage.studyplace != 0 ">
+									<button class="reexam-btn mui-pull-right" @click="goStudy(stage.studyprogress,stage.type,stage.courseSort,stage.lessonSort,stage.userid)">继续学习</button>
+									</template>
+									
+									<template v-else>
+									<button class="reexam-btn mui-pull-right" style="background: grey;" @click="toLearn(stage.lessonid,index+1)">申请重学</button>
+									</template>
+									
+									
+								</div>
+							</li>
+						</ul>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<script src="js/mui.min.js"></script>
+		<script type="text/javascript" src="js/wappublic.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			for(var i=0;i<$(".times span").length;i++){
+				if($(".times span").eq(i).html()==0){
+				$(".times span").eq(i).parent().css("background-image","url(img/xuexicishu1.png)");
+				}
+			}
+			var type = GetQueryString('type');
+		</script>
+		
+		<script type="text/javascript">
+		/*alert(standard.course.lessonList[0].id);*/
+		/*alert(GetQueryString("lessonSort"));*/
+		
+		var studylist = new Vue({
+				el: '#courselist',
+				data: { 
+					pes: ""
+				},
+				created: function() {
+					$.ajax({
+						type: 'get',
+						url:globel.ctx + 'f/api/myStudy',
+						dataType: 'json',
+						data:{
+							token:globel.token
+							},
+						success: function(res) { 
+							if(res.success == true) {
+								studylist.pes = res.body.studylist;
+							}
+						}
+					})
+					setTimeout(function() {
+							var linum = $('#courselist li').length;
+							if(linum == 0) {
+								mui.alert("你还没有学习！");
+							}
+							if($(".course-img img").height() <= $(".course-img img").width()) {
+								$(".course-img img").height(60);
+								$(".course-img img").width("auto");
+							} else {
+								$(".course-img img").height("auto");
+								$(".course-img img").width(60);
+							}
+						}, 500)
+				},
+				 methods:{
+				 	goStudy:function(progress,type,courseSort,lessonSort,userid){
+				 		location = htmlconfig.anchor_course_details+"?courseSort="+courseSort+"&type="+type+"&lessonSort="+lessonSort+"&progress="+progress+"&userid="+userid;
+				 	},
+				 	toLearn:function(lessonid,index){
+				 		var btnArray = ['取消', '申请重学'];
+						mui.confirm('您的学习机会已用完，是否申请重学？','已完成',btnArray,function(e){
+							if (e.index == 1) {
+							mui.toast('已申请')
+							/*alert(lessonid)
+							alert(index)*/
+								$.ajax({
+									type: 'post',
+									url:globel.ctx + 'f/api/applicationStudy',
+									dataType: 'json',
+									data:{
+										token:globel.token,
+										/*lessonname:stage.lessonname,*/
+										lessonName:lessonid,
+										index:index
+										},
+									success: function(res) {
+										if(res.success == true) {
+										}
+									}
+								})
+							}
+						})
+				 	}
+				 }
+			});
+			
+		</script>
+	</body>
+
+</html>

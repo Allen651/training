@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>考试结束</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>	
+	</head>
+
+	<body>
+		<!--主体信息-->
+		<div class="mui-content ksjs" id="result_paper">
+			<div class="content">
+				<div class="touxiang">
+					<div class="img-show">
+						<!--<img src="img/touxiang@3x.png" />-->
+						<img :src="_cdn_admin_path+anchor.headPicture"/>
+					</div>	
+				</div>
+				<div class="score">
+					<span id="result">{{score}}分</span>
+					<p>用时<time>{{time}}</time></p>
+					<!--<div class="get-reward">
+						<img src="img/bj_ribbon@3x.png"/>
+						<span class="reward">获得青铜主播称号</span>
+					</div>-->
+					<!--<a>点击领取奖励<span class="icon font_family icon-shouye_youjiantou_chakangengduo"></span></a>-->
+				</div>
+				<template v-if="score==0">
+					<ul class="comment">
+						<li>
+							<span class="radius-3-rb">恭喜你鸭~得了一个大！鸭！蛋 <img src="img/icon_0@3x.png"/></span>
+						</li>
+						<li>
+							<span class="radius-3-rb">哎呦喂呀，可歌可泣呀</span>
+						</li>
+						<li>
+							<span class="radius-3-rb">没事儿没事儿，下次努力嘛</span>
+						</li>
+						<li>
+							<span class="radius-3-rb">加油加油~</span>
+						</li>
+					</ul>		
+				</template>
+				<template v-else-if="score==100">
+					<ul class="comment">
+						<li>
+							<span class="radius-3-rb">哇塞~大神别走，求带飞<img src="img/icon_100@3x.png"/></span>
+						</li>
+						<li>
+							<span class="radius-3-rb">求带飞</span>
+						</li>
+						<li>
+							<span class="radius-3-rb">求带飞</span>
+						</li>
+						<li>
+							<span class="radius-3-rb">求带飞</span>
+						</li>
+					</ul>
+				</template>
+				<template v-else>
+					<ul class="comment">
+						<li>
+							<span class="radius-3-rb">怕什么真理无穷，进一寸有一寸的欢喜</span>
+						</li>
+						<li>
+							<span class="radius-3-rb">哎呦我去，楼上还会吟诗呢<img src="img/icon_86@3x.png"/></span>
+						</li>
+						<li>
+							<span class="radius-3-rb">哈哈哈，皮的可以</span>
+						</li>
+						<li>
+							<span class="radius-3-rb">加油加油~</span>
+						</li>
+					</ul>
+				</template>
+				<button v-on:click="nextStep()" >下一步</button>
+				<div style="height: 1px;"></div>
+			</div>
+	    </div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			var ksjs=document.getElementsByClassName("ksjs")[0];
+			autodivheight(ksjs); 
+		</script>
+		<script type="text/javascript">
+			var usedTime = sessionStorage.getItem("usetime");
+			var result = GetQueryString("result");
+			var courseid = sessionStorage.getItem('courseid');
+			$(document).ready(function(){
+				new Vue({
+					el: '#result_paper',
+					data: {
+						resutl: result,
+						anchor:"",
+						score:"",
+						reward:"",
+						course:"",
+						time:usedTime
+					},
+					created: function() {
+						var _self = this;
+                        $.ajax({
+							type: 'get',
+							url: globel.ctx + apiconfig.isReward_url,
+							data: {
+								token: globel.token,
+								courseId:courseid
+							},
+							dataType: 'json', 
+							success: function(res) {
+								if(res.success == true) {
+									_self.anchor = res.body.anchor;
+									_self.score = res.body.score;
+									_self.course = res.body.course;
+									_self.reward = res.body.reward;
+								}
+							}
+						})
+					},
+					methods: {
+						nextStep:function(){
+                            if(this.reward != 0){
+                            	location = htmlconfig.anchor_train_graduation;
+                            }else{
+                            	var courseSort = this.course.sort+1;
+								var btnArray = ['否', '是'];
+								mui.confirm('是否学习下一个课程？', '提示', btnArray, function(e) {
+								if (e.index == 1) {
+					                location = htmlconfig.anchor_course_details+'?type=1&courseSort='+courseSort+'&lessonSort=1';
+								} else {
+									
+								}
+		
+						      }) 
+                            	
+                            }
+						}
+					   
+					}
+		
+			    });
+			 
+			})
+			$(function(){
+				setTimeout(function(){
+					for(var i=0;i<$(".comment span").length;i++){
+						$(".comment span").eq(i).delay(i*500).animate({top:"0px",opacity:1},1200,"linear");
+				}
+				},1000)
+				
+			})
+		</script>
+	</body>
+
+</html>

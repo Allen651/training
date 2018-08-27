@@ -1,0 +1,289 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>标准课程</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+		</script>
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content bzkc" id="path">
+			<div class="content">
+				<ul class="level">
+					<li v-for="(node,i) in totalPath" :class="'level'+(i+1)">{{i+1}}</li>
+					<!--<li class="level2">02</li>
+					<li class="level3">03</li>
+					<li class="level4">04</li>
+					<li class="level5">05</li>
+					<li class="level6">06</li>
+					<li class="level7">07</li>
+					<li class="level8">08</li>
+					<li class="level9">09</li>
+					<li class="level10">10</li>
+					<li class="level11">11</li>
+					<li class="level12">12</li>
+					<li class="level13">13</li>
+					<li class="level14">14</li>
+					<li class="level15">15</li>
+					<li class="level16">16</li>
+					<li class="level17">17</li>
+					<li class="level18">18</li>
+					<li class="level19">19</li>
+					<li class="level20">20</li>
+					<li class="level21">21</li>
+					<li class="level22">22</li>
+					<li class="level23">23</li>
+					<li class="level24">24</li>
+					<li class="level25">25</li>
+					<li class="level26">26</li>
+					<li class="level27">27</li>
+					<li class="level28">28</li>
+					<li class="level29">29</li>
+					<li class="level30">30</li>
+					<li class="level31">31</li>
+					<li class="level32">32</li>
+					<li class="level33">33</li>
+					<li class="level34">34</li>
+					<li class="level35">35</li>					
+					<li class="level36">36</li>
+					<li class="level37">37</li>
+					<li class="level38">38</li>
+					<li class="level39">39</li>					
+					<li class="level40">40</li>-->
+					<div class="fn">
+						<img class="roles" src="img/bangzhu.png" />
+						<a href="anchor_train_rewardcenter.html"><img src="img/jiangli.png" /></a>
+					</div>
+					<div class="tiger_read">
+						<img src="img/tigerRead.png" />
+						<div class="xiasanjiao"></div>
+					</div>
+				</ul>
+				<canvas id="cvs"></canvas>
+			</div>
+			<div id="mark">
+				<div id="markbox">
+					<div class="title">
+						<span class="mark-level"></span>
+						<h3 id="lessonName"></h3>
+						<div>
+							<span class="icon font_family icon-zhuboduan_peixun_bofangliang"></span>
+							<span>{{path[currentIndex].playNum}}</span>
+							<span class="xian"></span>
+							<span class="icon font_family icon-zhuboduan_peixun_dianzanliang"></span>
+							<span>{{path[currentIndex].giveLikeNum}}</span>
+						</div>
+					</div>
+					<div class="content">
+
+						<template v-if="path[currentIndex].rewards != null && path[currentIndex].rewards != ''">
+							<p><span>——</span>完成奖励<span>——</span></p>
+							<div class="ico" id="getReward">
+								<template v-for="(reward,index) in path[currentIndex].rewards">
+									<div>
+										<img class="reward_img" :src="reward.image | urlFilter" />
+										<p>{{reward.name}}</p>
+									</div>
+									<template v-if="path[currentIndex].rewards.length-1 != index">
+										<span class="xian"></span>
+									</template>
+								</template>
+							</div>
+						</template>
+
+						<template v-else>
+							<div class="ico">
+								<img class="littleTiger" src="img/littleTiger.png" />
+								<!--<svg class="icon">
+									<use xlink:href="#icon-zhuboduan_peixun_kechengjiangli_hongbao"></use>
+								</svg>-->
+							</div>
+						</template>
+						<!--<img width="40px" height="30px" src=" /bbohu/userfiles/1/files/reward/reward/2018/03/medal_green@3x.png">-->
+						<!--<div>
+								<svg class="icon">
+									<use xlink:href="#icon-zhuboduan_peixun_kechengjiangli_xunzhangjiangli"></use>
+								</svg>
+								<p>现金红包</p>
+							</div>
+							<span class="xian"></span>
+							<div>
+								<svg class="icon">
+									<use xlink:href="#icon-zhuboduan_peixun_kechengjiangli_chenghaojiangli"></use>
+								</svg>
+								<p>现金红包</p>
+							</div>-->
+
+						<button id="play"></button>
+					</div>
+					<span class="icon font_family icon-zhuboduan_jianglizhongxin_guanbi close"></span>
+				</div>
+			</div>
+			<div id="mark1">
+				<div id="markbox">
+					<span class="icon font_family icon-zhuboduan_jianglizhongxin_lingquchenggong duihao"></span>
+					<p class="sum">恭喜你</p>
+					<p>奖励已成功领取</p>
+					<button>查看奖励</button>
+					<span class="icon font_family icon-zhuboduan_jianglizhongxin_guanbi close"></span>
+				</div>
+			</div>
+
+		</div>
+		<div id="roles">
+			<div class="bg">
+				<img class="close" src="img/guanbi.png" />
+				<div class="content">
+					<div class="list">
+						<p>1、60天内需学完全部课程</p>
+						<p>2、每节课程有且仅有<span>3次</span>学习机会</p>
+						<p>3、每门课程学习结束进行考试，分数计入总成绩，没有重考机会</p>
+						<p>4、每个学习阶段完成奖励相应称号：青铜 、白银、黄金、王者，并有<span>1-100元</span>现金红包奖励，所有课程学完即可提现</p>
+						<p>5、所有课程完成会有神秘大奖哟</p>
+						<p></p>
+					</div>
+					<div class="remind">
+						<h3>特别提醒：</h3>
+						<p>你的学习排行和考试成绩将是公司培养力度的重要参考标准，请务必重视！</p>
+					</div>
+					<img class="study" src="img/kaishixuexi.png" />
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			//			var bg=document.getElementsByClassName("bg")[0];
+			var roles = document.getElementById("roles");
+			//			autodivheight(bg);
+			autodivheight(roles);
+			$(".bg").height($(".bg").width() * 7 / 4);
+			$(window).scrollTop($(".content").height());
+			//获取数据
+			var path = new Vue({
+				el: '#path',
+				data: {
+					path: [],
+					maxPath: 0,
+					index: 0,
+					totalPath: 0,
+					currentIndex: 0
+				},
+				created: function() {
+					var _self = this;
+					$.ajax({
+						type: "post",
+						url: globel.ctx + apiconfig.getStandardPathInfo_url,
+						data: {
+							token: globel.token
+						},
+						async: false,
+						success: function(res) {
+							_self.path = res.body.path; //每个结点信息
+							_self.maxPath = res.body.maxPath; //当前阶段最大结点
+							_self.index = res.body.index; //当前学习结点
+							_self.totalPath = res.body.totalPath; //章节总数
+						}
+					});
+				},
+				filters: {
+					urlFilter: function(value) {
+						if(!value) return ''
+						value = value.toString()
+						return _cdn_admin_path + value
+					}
+				}
+			});
+			$(function() {
+				setTimeout(function() {
+					$().ready(levelPath());
+				}, 200)
+				/*领取奖励弹窗*/
+				setTimeout(function() {
+					$(".level li").click(function() {
+						var i = Number($(this).html());
+						if(i > path.index) {
+							return;
+						}
+						path.currentIndex = i - 1;
+						$("#mark").fadeIn();
+						$(".mark-level").html("课程" + i);
+						$('#lessonName').html(path.path[i - 1].lessonName);
+						$('#play').html('进入课程(' + path.path[i - 1].studyPlace + ')');
+						$('#getReward').click(function() {
+							location = htmlconfig.anchor_train_rewardcenter;
+						})
+						$('#play').click(function() {
+							location = htmlconfig.anchor_course_details + "?type=1&courseSort=" + path.path[i - 1].courseSort + "&lessonSort=" + path.path[i - 1].lessonSort;
+						})
+						$(".close").click(function() {
+							$("#mark").fadeOut();
+						})
+					})
+				}, 200)
+				/*画布*/
+				function levelPath() {
+					var level = $(".level li");
+					for(var i = 0; i < level.length - 1; i++) { /*i为第几课-1*/
+						if(i >= (path.index - 1)) {
+							level.eq(i + 1).css("background-image", "url(img/hui.png)");
+						}
+					}
+				}
+			})
+			/*当前课节小老夫上下移动*/
+			$(function() {
+				var level = $(".level li");
+				var indexT = level.eq(path.index - 1).position().top;
+				var indexL = level.eq(path.index - 1).position().left;
+				$(".tiger_read").css({
+					"top": indexT - 65,
+					"left": indexL - 1
+				});
+				setTimeout(function() {
+					$("body,html").scrollTop(indexT-200);
+				}, 500)
+				down()
+
+				function down() {
+					$(".tiger_read").animate({
+						"top": indexT - 55
+					}, 500);
+					$(".tiger_read").animate({
+						"top": indexT - 65
+					}, 500);
+					down();
+				}
+
+			})
+			/*规则页面消失*/
+			$(".bg img").on("click", function() {
+				$(".bg *").fadeOut();
+				$(".bg").delay(150).toggle("scale");
+				$("#roles").delay(300).fadeOut();
+			})
+			$(".fn .roles").on("click", function() {
+				$("#roles").fadeIn();
+				$(".bg").delay(150).toggle("scale");
+				$(".bg *").delay(250).fadeIn();
+			})
+		</script>
+	</body>
+
+</html>

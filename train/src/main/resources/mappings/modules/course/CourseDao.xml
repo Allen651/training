@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.CourseDao">
+    
+	<sql id="courseColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.course_name AS "courseName",
+		a.lesson_num AS "lessonNum",
+		a.course_type_id AS "courseType.id",
+		a.course_brief AS "courseBrief",
+		a.details AS "details",
+		a.teacher_id AS "teacher.id",
+		a.difficulty_level AS "difficultyLevel",
+		teacher.teacher_name AS "teacher.teacherName",
+		teacher.note AS "teacher.note",
+		teacher.head_image AS "teacher.headImage",
+		courseType.name AS "courseType.name",
+		courseType.type AS "courseType.type",
+		courseType.stage AS "courseType.stage",
+		a.sort AS "sort",
+		a.roles AS "roles"
+	</sql>
+	
+	<sql id="courseJoins">
+		LEFT JOIN train_teacher teacher ON teacher.id = a.teacher_id
+		LEFT JOIN train_course_type courseType ON courseType.id = a.course_type_id
+	</sql>
+	
+    <resultMap type="Course" id="CourseResult" autoMapping="true">
+    	<result column="details" property="details"   typeHandler="com.jeeplus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="CourseResult" >
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM train_course a
+		<include refid="courseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getCourseCountByType" resultType="integer" >
+		SELECT count(0)
+		FROM train_course a
+		<include refid="courseJoins"/>
+		WHERE courseType.type = #{type}
+	</select>
+	
+	<select id="findList" resultMap="CourseResult" >
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM train_course a
+		<include refid="courseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="courseName != null and courseName != ''">
+				AND a.course_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{courseName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{courseName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{courseName},'%')</if>
+			</if>
+			<if test="courseType != null and courseType.id != null and courseType.id != ''">
+				AND a.course_type_id = #{courseType.id}
+			</if>
+			<if test="courseType != null and courseType.type != null and courseType.type != ''">
+				AND courseType.type = #{courseType.type}
+			</if>
+			<if test="sort != null and sort != ''">
+				AND a.sort = #{sort}
+			</if>
+			<if test="teacher != null and teacher.id != null and teacher.id != ''">
+				AND a.teacher_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{teacher.id}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{teacher.id}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{teacher.id},'%')</if>
+			</if>
+			<if test="difficultyLevel != null and difficultyLevel != ''">
+				AND a.difficulty_level = #{difficultyLevel}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据授课对象获取课程总数 -->
+	<select id="getCoursesCountByRole" resultType="integer" >
+		SELECT count(0)
+		FROM train_course a where locate(#{0},a.roles) > 0 
+	</select>
+	
+	<!-- 根据授课对象分页查询课程 -->
+	<select id="listCoursesByRole" resultMap="CourseResult" >
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM train_course a
+		<include refid="courseJoins"/>
+		<where>
+			locate(#{0},a.roles) > 0 ORDER BY a.sort ASC limit #{1},#{2} 
+		</where>
+	</select>
+	<!-- 查询课程列表 -->
+	<select id="findCourseList" resultType="com.jeeplus.modules.api.model.CourseModel" >
+		SELECT 
+	    a.id AS "id",
+		a.course_name AS "courseName",
+		a.course_brief AS "courseBrief",
+		a.sort AS "sort",
+		examine.exam_result AS "result"
+		FROM train_course a
+		LEFT JOIN train_examine examine ON examine.course_id = a.id
+		AND	examine.user_id = #{userId}
+		ORDER BY a.sort DESC , examine.create_date DESC
+	</select>
+	
+	<!-- 查询课程题目数量 -->
+	<select id="findItemNum" resultType="Integer" >
+	    select count(1) from train_exam_questions e 
+	    where e.course_id= #{courseId}
+	</select>
+	
+	<!-- 根据type查最后一门课程 -->
+	<select id="getLastCourse" resultType="Course" >
+	    SELECT c.* FROM train_course c , train_course_type t 
+		WHERE c.course_type_id = t.id
+		AND t.type = #{type} 
+		ORDER BY c.sort DESC 
+		LIMIT 1
+	</select>
+	
+	
+	<select id="findListByTypeAndStage" resultMap="CourseResult" >
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM train_course a
+		<include refid="courseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="courseType != null and courseType.type != null and courseType.type != ''">
+				AND courseType.type = #{courseType.type}
+			</if>
+			<if test="courseType != null and courseType.parentIds != null and courseType.parentIds != '' and courseType.id != null and courseType.id != ''">
+				AND (courseType.id = #{courseType.id} OR courseType.parent_ids LIKE
+					<if test="dbName == 'mysql'">concat(#{courseType.parentIds},#{courseType.id},',%)')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="CourseResult" >
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM train_course a
+		<include refid="courseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_course(
+			id,
+			create_by,
+			create_date,
+			remarks,
+			del_flag,
+			course_name,
+			lesson_num,
+			course_type_id,
+			course_brief,
+			details,
+			teacher_id,
+			difficulty_level,
+			sort,
+			roles
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{remarks},
+			#{delFlag},
+			#{courseName},
+			#{lessonNum},
+			#{courseType.id},
+			#{courseBrief},
+			#{details},
+			#{teacher.id},
+			#{difficultyLevel},
+			#{sort},
+			#{roles}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_course SET 	
+			remarks = #{remarks},
+			course_name = #{courseName},
+			lesson_num = #{lessonNum},
+			course_type_id = #{courseType.id},
+			course_brief = #{courseBrief},
+			details = #{details},
+			teacher_id = #{teacher.id},
+			difficulty_level = #{difficultyLevel},
+			sort = #{sort},
+			roles = #{roles}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_course
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_course SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Course" statementType="STATEMENT">
+		select * FROM train_course  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findListByteacher" resultType="Teacher">
+		SELECT 
+			*
+		FROM train_teacher a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="teacherName != null and teacherName != ''">
+				AND a.teacher_name LIKE 
+				<if test="dbName == 'oracle'">#{teacherName}||'%'</if>
+				<if test="dbName == 'mssql'">#{teacherName}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{teacherName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

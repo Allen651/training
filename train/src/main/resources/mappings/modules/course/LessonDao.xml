@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.LessonDao">
+    
+	<sql id="lessonColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.lesson_name AS "lessonName",
+		a.course_id AS "course.id",
+		course.course_name AS "course.courseName",
+		course.sort AS "course.sort",
+		a.sort AS "sort",
+		video.id AS "video.id",
+		video.video_name AS "video.videoName",
+		video.video_duration AS "video.videoDuration",
+		video.video_image AS "video.videoImage",
+		video.video_id AS "video.videoId",
+		a.studyLimitNum AS "studyLimitNum",
+		a.givelike_num AS "givelikeNum",
+		a.play_num AS "playNum"
+		
+	</sql>
+	
+	<sql id="lessonJoins">
+		LEFT JOIN train_course course ON course.id = a.course_id
+		LEFT JOIN train_video video ON video.lesson_id = a.id
+	</sql>
+	
+    
+	<select id="get" resultType="Lesson" >
+		SELECT 
+			<include refid="lessonColumns"/>
+		FROM train_lesson a
+		<include refid="lessonJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getLessonCountByTypeId" resultType="integer">
+		SELECT count(0)
+		FROM train_lesson a
+		<include refid="lessonJoins"/>
+		LEFT JOIN train_course_type type ON type.id = course.course_type_id
+		WHERE type.type = 1 and type.id = #{id}
+	</select>
+	
+	<select id="getLessonCountByType" resultType="integer" >
+		SELECT count(0)
+		FROM train_lesson a
+		<include refid="lessonJoins"/>
+		LEFT JOIN train_course_type type ON type.id = course.course_type_id
+		WHERE type.type = #{type}
+	</select>
+	
+	<select id="getMaxSort" resultType="integer" >
+		SELECT 
+			max(sort)
+		FROM train_lesson a
+		WHERE a.course_id = #{course.id}
+	</select>
+	
+	<select id="getStageLessonsNumByType" resultType="integer" >
+		select count(t.stage)
+		
+		from train_lesson l
+			Left Join train_course c on l.course_id = c.id
+		  Left join train_course_type t on t.id = c.course_type_id
+		
+		where t.type = #{0}
+		
+		GROUP BY t.stage
+		ORDER BY t.stage ASC
+	</select>
+	
+	<select id="listStandardDir" resultType="hashMap" >
+		select 
+			l.id AS "lessonId",
+			l.lesson_name AS "lessonName",
+			l.sort AS "lessonSort",
+			c.id AS "courseId",
+		  c.lesson_num AS "lessonNum",
+			c.sort AS "courseSort",
+			v.video_duration AS "videoDuration",
+			s.is_study AS "isStudy",
+			count(q.id) AS "questionsNum",
+			e.id AS "examineId",
+			t.stage AS "stage",
+			t.`name` AS "stageName"
+				
+		from train_lesson l
+			Left Join train_course c on l.course_id = c.id
+		  Left join train_course_type t on t.id = c.course_type_id
+		  left join train_video v on v.lesson_id = l.id
+			left join train_study s on s.lesson_id = l.id and s.user_id = #{1}
+			left join train_exam_questions q on q.course_id = c.id
+			left join train_examine e on c.id = e.course_id and e.user_id = #{1}
+		
+		where t.type = #{0}
+		
+		GROUP BY l.id
+		ORDER BY t.stage asc,c.sort asc,l.sort asc
+	</select>
+	
+	<select id="findcourse" resultType="Lesson" >
+		SELECT 
+			a.*
+		FROM train_lesson a
+		WHERE a.course_id = #{course.id}
+	</select>
+	
+	
+	<select id="getByCourseAndSort" resultType="Lesson" >
+		SELECT 
+			<include refid="lessonColumns"/>
+		FROM train_lesson a
+		<include refid="lessonJoins"/>
+		WHERE a.course_id = #{course.id}
+		<if test="sort != null and sort != ''">
+			AND a.sort = #{sort}
+		</if>
+	</select>
+	
+	<select id="findList" resultType="Lesson" >
+		SELECT 
+			<include refid="lessonColumns"/>
+		FROM train_lesson a
+		<include refid="lessonJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="lessonName != null and lessonName != ''">
+				AND a.lesson_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{lessonName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{lessonName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{lessonName},'%')</if>
+			</if>
+			<if test="course != null and course.id != null and course.id != ''">
+				AND a.course_id = #{course.id}
+			</if>
+			<if test="sort != null and sort != ''">
+				AND a.sort = #{sort}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC, a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Lesson" >
+		SELECT 
+			<include refid="lessonColumns"/>
+		FROM train_lesson a
+		<include refid="lessonJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC, a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_lesson(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			lesson_name,
+			course_id,
+			sort,
+			studyLimitNum,
+			givelike_num,
+			play_num
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{lessonName},
+			#{course.id},
+			#{sort},
+			#{studyLimitNum},
+			#{givelikeNum},
+			#{playNum}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_lesson SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			lesson_name = #{lessonName},
+			course_id = #{course.id},
+			sort = #{sort},
+			studyLimitNum = #{studyLimitNum},
+			givelike_num = #{givelikeNum},
+			play_num = #{playNum}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updatelesson">
+		UPDATE train_lesson SET 	
+			givelike_num = #{0} 
+		WHERE id = #{1}
+	</update>
+	
+	
+	<update id="updateplaynum">
+		UPDATE train_lesson SET 	
+			play_num = #{0} 
+		WHERE id = #{1}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_lesson
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE course_id = #{course.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_lesson SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE course_id = #{course.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Lesson" statementType="STATEMENT">
+		select * FROM train_lesson  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findListBycourse" resultType="Course">
+		SELECT 
+			*
+		FROM train_course a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="courseName != null and courseName != ''">
+				AND a.course_name LIKE 
+				<if test="dbName == 'oracle'">#{courseName}||'%'</if>
+				<if test="dbName == 'mssql'">#{courseName}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{courseName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.course_type_id,a.sort ASC,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

@@ -1,0 +1,348 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>奖励中心</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>				
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content jlzx" id="reward">
+			<div class="grade">
+				<div class="touxiang mui-row">
+					<div class="mui-col-xs-6  mui-pull-left">
+						<img :src="_cdn_admin_path+user.headPicture" />
+						<div class="mingzi">
+							<h3>{{user.name}}</h3>
+							<span></span>
+						</div>
+					</div>
+					<div class="grade-icon mui-col-xs-6 mui-pull-right">
+						<div class="xian"></div>
+						<template v-for="(reward,key,indexs) in rewards">
+							<template v-if="reward">
+								<svg v-show="key == '2'" class="icon">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_lv"></use>
+								</svg>
+								<svg v-show="key == '3'" class="icon">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_hong"></use>
+								</svg>
+								<svg v-show="key == '1'" class="icon">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_lan"></use>
+								</svg>
+								<svg v-show="key == '4'" class="icon">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_zi"></use>
+								</svg>
+								<svg v-show="key == '5'" class="icon">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangbei"></use>
+								</svg>
+							</template>
+						</template>
+						<template v-for="(reward,key,indexs) in rewards">
+							<template v-if="!reward">
+								<svg v-show="key == '2'" class="icon" v-bind:class="{weihuoqu:reward == '0'}">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_lv"></use>
+								</svg>
+								<svg v-show="key == '3'" class="icon" v-bind:class="{weihuoqu:reward == '0'}">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_hong"></use>
+								</svg>
+								<svg v-show="key == '1'" class="icon" v-bind:class="{weihuoqu:reward == '0'}">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_lan"></use>
+								</svg>
+								<svg v-show="key == '4'" class="icon" v-bind:class="{weihuoqu:reward == '0'}">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangpai_zi"></use>
+								</svg>
+								<svg v-show="key == '5'" class="icon" v-bind:class="{weihuoqu:reward == '0'}">
+									<use xlink:href="#icon-zhuboduan_jianglizhongxin_jiangbei"></use>
+								</svg>
+							</template>
+						</template>
+					</div>
+				</div>
+				<div class="grading">
+					<!--间距-->
+					<div>
+						<!--外包-->
+						<div class="mui-row progress">
+							<!--进度条-->
+							<img src="img/bronze_no.png"><span class="xian"></span><img src="img/silver_no.png"><span class="xian"></span><img src="img/gold_no.png"><span class="xian"></span><img src="img/king_no.png">
+						</div>
+						<div class="level">
+							<span>青铜主播</span><span>白银主播</span><span>黄金主播</span><span>王者主播</span>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<!--tab-->
+			<div class="tabs">
+				<!--头部tab-->
+				<div class=" toptab">
+					<div onclick="f1()" id="zjzb" class="first active">奖励大厅</div>
+					<div onclick="f2()" id="jjzb" class="second">我的红包</div>
+				</div>
+				<div class="xian"></div>
+				<!--tab内容-->
+				<div class="first-list" id="first-list">
+					<ul class="newbie">
+						<div class="title">
+							<div class="sekuai"></div>
+							<h4>奖励列表</h4>
+						</div>
+						<template v-for="course in courselist">
+							<li>
+								<h3>{{course.courseName}}</h3>
+								<!--<span>可获得红包{{course.redpacket}}元</span>-->
+								<span>{{course.remarks}}</span>
+								<template v-if="course.isReceive==1">
+									<button class="mui-pull-right yilingqu">已领取</button>
+								</template>
+								<template v-else-if="course.isReceive==0">
+									<button class="mui-pull-right weilingqu" v-on:click="getMoney(course.id,course.rewardId,course.redpacket)">领取</button>
+								</template>
+								<template v-else>
+									<button class="mui-pull-right weiwancheng">未完成</button>
+								</template>
+							</li>
+						</template>
+					</ul>
+					<div style="border-bottom: 0.5px solid #dddddd; width: 100%;"></div>
+					<!--<p class="explain"><span>*</span> 相关奖励的详细规则请查看成长值和优币的帮助说明</p>-->
+				</div>
+				<div class="second-list" style="display: none;" id="second-list">
+					<div class="remain">
+						<h3>{{sumMoney}}.00</h3>
+						<p>当前可用余额(元)</p>
+						<template v-if="status == 3">
+							<button v-on:click="withdraw(sumMoney)">申请提现</button>
+						</template>
+						<template v-if="status == 1">
+							<button v-on:click="withdraw(sumMoney)" disabled>已领取</button>
+						</template>
+						<template v-if="status == 0">
+							<button v-on:click="withdraw(sumMoney)" disabled>提现中...</button>
+						</template>
+					</div>
+					<div class="jianju"></div>
+					<div class="details">
+						<ul>
+							<template v-for="course in receivedList">
+									<li>
+										<h3>完成{{course.courseName}}</h3>
+										<time>{{course.gettime}}</time>
+										<div class="mui-pull-right">+{{course.rewardValue}}.00</div>
+									</li>
+							</template>
+						</ul>
+					</div>
+				</div>
+				<div class="third-list" style="display:none;" id="third-list"></div>
+			</div>
+			<div id="mark">
+				<div id="markbox">
+					<h3><span class="icon font_family icon-zhuboduan_jianglizhongxin_lingquchenggong duihao"></span>领取成功</h3>
+					<p class="sum">{{redpacket}}<span>元</span></p>
+					<p>已放入"我的红包"</p>
+					<button v-on:click="checkReward()">查看奖励</button>
+					<span class="icon font_family icon-zhuboduan_jianglizhongxin_guanbi close"></span>
+				</div>
+			</div>
+			<div id="mark1">
+				<div id="markbox">
+					<span class="icon font_family icon-zhuboduan_jianglizhongxin_lingquchenggong duihao"></span>
+					<p class="sum">恭喜你</p>
+					<p>奖励已成功领取</p>
+					<button v-on:click="checkReward()">查看奖励</button>
+					<span class="icon font_family icon-zhuboduan_jianglizhongxin_guanbi close"></span>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			/*Tab*/
+			f1 = function() {
+				$(".first").addClass("active").siblings().removeClass("active");
+				$(".first-list").show();
+				$(".second-list").hide();
+				$(".third-list").hide();
+			}
+			f2 = function() {
+				$(".second").addClass("active").siblings().removeClass("active");
+				$(".first-list").hide();
+				$(".second-list").show();
+				$(".third-list").hide();
+			}
+		</script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+	            new Vue({
+					el: '#reward',
+					data: {
+						user: '',
+						rewards: [],
+						num: '',
+						courselist: '',
+						sumMoney: '',
+						redpacket: '',
+						receivedList:'',
+						status:''
+					},
+					created: function() {
+						var _self = this;
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + 'f/api/getMyReward',
+							dataType: 'json',
+							data: {
+								token: globel.token,
+							},
+							success: function(res) {
+								if(res.success){
+									_self.user = res.body.user;
+									_self.rewards = res.body.jiangzhang;
+									_self.num = res.body.num;
+									_self.courselist = res.body.courselist;
+									_self.sumMoney = res.body.sumMoney;	
+									_self.receivedList = res.body.receivedList;	
+									_self.status = res.body.status;
+									/*等级进度条*/
+									var index = _self.num - 1;
+									if(_self.num == 0) {
+										$(".mingzi>span").css({"background-color":"white"});
+										return false;
+									} else {
+										var progress = $(".progress img");
+										var level = $(".level span");
+										var src = progress.eq(index).attr("src");
+										var newsrc = src.split("_")[0];
+										$(".mingzi span").html("<img src='" + newsrc + "_in.png'/>" + level.eq(index).html());
+										progress.eq(index).attr("src", newsrc + "_in.png");
+										level.eq(index).css("color", "#303030");
+										for(var i = 0; i < progress.length; i++) {
+											if(i < index) {
+												var src = progress.eq(i).attr("src");
+												var newsrc = src.split("_")[0];
+												progress.eq(i).attr("src", newsrc + "_accomplish.png");
+												level.eq(i).css("color", "#303030");
+												$(".progress .xian").eq(i).css("background-color", "#303030");
+											}
+										}
+									}		
+								}else{
+									mui.alert("你还没有奖励！")
+								}
+							}
+						})
+					},
+					methods: {
+						//领取红包
+						getMoney: function(courseid,rewardId,redpacket) {
+							var _self = this;
+							$.ajax({
+								type: 'get',
+								url: globel.ctx + 'f/api/receiveReward',
+								dataType: 'json',
+								data: {
+									token: globel.token,
+									courseId: courseid,
+									rewardId:rewardId
+								},
+								success: function(res) {
+									_self.redpacket = redpacket;
+									if(res.success == true) {
+										$("#mark").show();
+										var mark = document.getElementById("mark");
+										window.onclick = function(event) {
+											if(event.target == mark) {
+												mark.style.display = "none";
+												window.location.reload();
+											}
+										}
+										$(".close").click(function(event) {
+											window.location.reload();
+											$("#mark").hide();
+										})
+									} else {
+
+									}
+								}
+							})
+						},
+						//提现
+						withdraw: function(sumMoney) {
+							$.ajax({
+								type: 'get',
+								url: globel.ctx + 'f/api/addBill',
+								dataType: 'json',
+								data: {
+									token: globel.token,
+									money: sumMoney
+								},
+								success: function(res) {
+									if(res.success == true) {
+										$("#mark1").show();
+										var mark = document.getElementById("mark1");
+										window.onclick = function(event) {
+											if(event.target == mark) {
+												mark.style.display = "none";
+												window.location.reload();
+											}
+										}
+										$(".close").click(function(event) {
+											window.location.reload();
+											$("#mark1").hide();
+										})
+									} else {
+										mui.alert(res.msg);
+									}
+								}
+							})
+						},
+						//查看奖励
+						checkReward: function() {
+							$("#mark").hide();
+							$("#mark1").hide();
+							var _self = this;
+							$.ajax({
+								type: 'get',
+								url: globel.ctx + 'f/api/getMyReward',
+								dataType: 'json',
+								data: {
+									token: globel.token,
+								},
+								success: function(res) {
+									_self.sumMoney = res.body.sumMoney;	
+									_self.courselist = res.body.courselist;
+									_self.receivedList = res.body.receivedList;	
+									_self.status = res.body.status;
+								}
+							})
+							f2();
+						},
+						//我的红包
+						//奖励大厅
+
+					}
+				});
+			})
+		</script>
+	</body>
+
+</html>

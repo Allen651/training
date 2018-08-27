@@ -1,0 +1,334 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>试卷</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>			
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div id="testPaper" class="mui-content shijuan">	
+			<div>
+				<!--标题-->
+				<div class="mui-text-center mytime">
+					<time id="mytime">00:00:00</time>
+				</div>
+				<div class="test-paper">
+					<template v-for="(item, index) in items.slice(0,len)" v-if="index===indexNum">
+						<div class="question">
+							<section>
+								<h5 class="question-number">
+   									({{index+1}}/{{len}}<template v-if="item.type==1">单选</template><template v-else>多选</template>)
+								</h5>
+								<span v-html="item.title"></span>
+							</section>
+						</div>
+						<ul class="answer">
+							<li v-for="(ite,key) in item.questionsItemsList" v-on:click="getIndex(index,key)">
+								<template v-if="key==0">
+									<span class="answer-option">A</span>
+								</template>
+								<template v-else-if="key==1">
+									<span class="answer-option">B</span>
+								</template>
+								<template v-else-if="key==2">
+									<span class="answer-option">C</span>
+								</template>
+								<template v-else-if="key==3">
+									<span class="answer-option">D</span>
+								</template>
+								<span v-html="ite.itemContent"></span>
+							</li>
+						</ul>
+					</template>
+				</div>
+			</div>
+			<div class="my-foot-tab mui-row mui-text-center">
+				<div class="mui-col-xs-4" v-on:click="changeMinu()">
+					<span class="icon font_family icon-zhuboduan_kaoshi_shangyiti"></span>
+					<p>上一题</p>
+				</div>
+				<div class="mui-col-xs-4" v-on:click="submit()"><span class="icon font_family icon-zhuboduan_kaoshi_tijiao"></span>
+					<p>提交</p>
+				</div>
+				<div class="mui-col-xs-4" v-on:click="changeAdd()"><span class="icon font_family icon-zhuboduan_kaoshi_xiayiti"></span>
+					<p>下一题</p>
+				</div>
+			</div>
+	    </div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+		</script>
+		<script type="text/javascript">
+			function two_char(n) {
+				return n >= 10 ? n : "0" + n;
+			}
+            //计时,累计时间
+            var usedTime = sessionStorage.getItem("testTime")
+            if(usedTime!= null && usedTime != ""){
+            	var sec =  Number(usedTime);
+            }else{
+            	 var sec = 0;
+            }
+			function time_fun() {
+			    var date = new Date(0, 0)
+				date.setSeconds(sec);
+				var h = date.getHours(),
+					m = date.getMinutes(),
+					s = date.getSeconds();
+				document.getElementById("mytime").innerText = two_char(h) + ":" + two_char(m) + ":" + two_char(s);
+				setInterval(function() {
+					sec++;
+					var date = new Date(0, 0)
+					date.setSeconds(sec);
+					var h = date.getHours(),
+						m = date.getMinutes(),
+						s = date.getSeconds();
+					document.getElementById("mytime").innerText = two_char(h) + ":" + two_char(m) + ":" + two_char(s);
+				}, 1000);
+			}
+			$(document).ready(time_fun)
+
+            var courseid = sessionStorage.getItem('courseid');
+            var number = GetQueryString("number");
+            if(number==null){
+            	indexNum = 0;
+            	var length;
+            	var leng = sessionStorage.getItem("length");
+            	if(leng!=null){
+            		length = Number(leng);
+            	}
+            	if(length!=0){
+            		//清除session
+            		for(i=1;i<=length;i++){
+					    sessionStorage.removeItem(i);
+			        }
+				    sessionStorage.removeItem('testTime');	
+            	}	
+            }else{
+            	indexNum = Number(number);
+            }
+            
+            function tianjia(){
+				var getS = sessionStorage.getItem((indexNum + 1));
+				if(getS != null && getS != "") {
+					//添加样式
+					for(var i = 0; i < getS.length; i++) {
+						$(".answer li").eq(getS[i]).addClass("active");
+					}	
+//				}else{
+//					//清除样式
+//					for(var i = 0; i < $(".answer li").length; i++) {
+//					   $(".answer li").eq(i).removeClass("active");
+//				   }	
+				}	
+            }
+            
+			$(document).ready(function() {
+				new Vue({
+					el: '#testPaper',
+					data: {
+						items: "",
+						indexNum: indexNum,
+						title:""
+					},
+					computed: {
+						// 计算属性的 getter
+						len: function() {
+							return this.items.length;
+						}
+					},
+//					filters: {
+//						urlFilter: function(value) {
+//							if(!value) return ''
+//							return  value.replace(/&lt;/g, "<")
+//							.replace(/&gt;/g, ">")
+//							.replace(/&amp;/g, "&")
+//							.replace(/&ldquo;/g,'“')
+//							.replace(/&rdquo;/g,'”')
+//							.replace(/&lsquo;/g,"‘")
+//							.replace(/&rsquo;/g,"’")
+//							.replace(/&quot;/g, '"')
+//							.replace(/&apos;/g, "'");
+//						}
+//					},
+					created: function() {
+						var _self = this;
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + apiconfig.examlist_url,
+							data: {
+								token: globel.token,
+								courseId: courseid
+							},
+							dataType: 'json',
+							success: function(res) {
+								if(res.success == true) {
+									_self.items = res.body.examlist;
+									if(number==null){
+            	                      
+            	                    }
+									setTimeout(tianjia,100)		
+								}
+							}
+						})
+					},
+					methods: {
+						//下一题
+						changeAdd: function() {
+							//存上一题答案
+							var ans = [];
+								for(var i = 0; i < $(".answer li").length; i++) {
+									var actived = $(".answer li").eq(i).hasClass("active");
+									if(actived) {
+//										if(i==0){
+//											ans.push('A');
+//										}else if(i==1){
+//											ans.push('B');
+//										}else if(i==2){
+//											ans.push('C');
+//										}else if(i==3){
+//											ans.push('D');
+//										}
+										ans.push(i);
+									}
+							}	
+							sessionStorage.setItem((this.indexNum + 1), ans);
+							//把题目数放到session，让页面加载时清理session，防止返回时进来有session
+							sessionStorage.setItem("length",this.len);
+							//显示下一个页面
+							if(this.indexNum + 2 > this.len) {
+							    var btnArray = ['否', '是'];
+								mui.confirm('已经是最后一题了，是否提交？', '提示', btnArray, function(e) {
+								if (e.index == 1) {
+									sessionStorage.setItem("testTime",sec);
+									location = "anchor_train_answer_sheet.html";    
+								} else {
+									
+								}
+		
+						    })
+								this.indexNum = this.indexNum;
+							} else {
+								this.indexNum = this.indexNum + 1;
+							}
+							
+							//清除样式
+							for(var i = 0; i < $(".answer li").length; i++) {
+								$(".answer li").eq(i).removeClass("active");
+							}
+							
+							var getS = sessionStorage.getItem((this.indexNum + 1));
+							if(getS != null && getS != "") {
+								//添加样式
+								for(var i = 0; i < getS.length; i++) {
+									$(".answer li").eq(getS[i]).addClass("active");
+								}	
+							}else{
+								//清除样式
+								for(var i = 0; i < $(".answer li").length; i++) {
+								   $(".answer li").eq(i).removeClass("active");
+							   }	
+							}
+						},
+						
+						//上一题
+						changeMinu: function() {
+							//存上一个页面答案
+							var ans = [];
+								for(var i = 0; i < $(".answer li").length; i++) {
+									var actived = $(".answer li").eq(i).hasClass("active");
+									if(actived) {
+//										if(i==0){
+//											ans.push('A');
+//										}else if(i==1){
+//											ans.push('B');
+//										}else if(i==2){
+//											ans.push('C');
+//										}else if(i==3){
+//											ans.push('D');
+//										}
+										ans.push(i);
+									}
+								}		
+							sessionStorage.setItem((this.indexNum + 1), ans);
+						    //显示页面
+							if(this.indexNum == 0) {
+								mui.alert("这是第一题了！");
+								this.indexNum = this.indexNum;
+							} else {
+								this.indexNum = this.indexNum - 1;
+							}
+							
+							//清除样式
+							for(var i = 0; i < $(".answer li").length; i++) {
+								$(".answer li").eq(i).removeClass("active");
+							}
+							
+							var getS = sessionStorage.getItem((this.indexNum + 1));
+							if(getS != null && getS != "") {
+								//添加样式
+								for(var i = 0; i < getS.length; i++) {
+									$(".answer li").eq(getS[i]).addClass("active");
+								}	
+							}else{
+								//清除样式
+								for(var i = 0; i < $(".answer li").length; i++) {
+									$(".answer li").eq(i).removeClass("active");
+								}	
+							}
+						},
+						//提交
+						submit: function() {
+							var ans = [];
+								for(var i = 0; i < $(".answer li").length; i++) {
+									var actived = $(".answer li").eq(i).hasClass("active");
+									if(actived) {
+										ans.push(i);
+									}
+								}		
+							sessionStorage.setItem((this.indexNum + 1), ans);
+							sessionStorage.setItem("testTime",sec);
+							sessionStorage.setItem("length",this.len);
+							location = "anchor_train_answer_sheet.html";
+							//sessionStorage.setItem('courseid',courseid);
+						},
+						//点击
+						getIndex: function(index, key) {
+							this.index = index;
+							this.key = key;
+							//console.log("第" + (index + 1) + "题，第" + (key + 1) + "选项")
+							$(".answer li").eq(key).toggleClass("active");
+							var item=this.items[index];
+							if(item.type==1){
+								for(var i=0;i<$(".answer li").length;i++){
+									$(".answer li").removeClass("active");
+								}								
+								$(".answer li").eq(key).addClass("active");
+							}
+						}
+
+					}
+			});
+	    })
+		</script>
+	</body>
+
+</html>

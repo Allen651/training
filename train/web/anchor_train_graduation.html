@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>考试结束</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript">
+			//加载项目 CSS文件
+			dynamicLoading.css("/css/mui.min.css");
+			dynamicLoading.css("/css/iconfont.css");
+			dynamicLoading.css("/css/wappublic.css");
+			//动态加载项目 JS文件
+			dynamicLoading.js("/js/iconfont.js");
+			dynamicLoading.js("/js/jquery-3.2.1.min.js");
+			dynamicLoading.js("/js/mui.min.js");
+			dynamicLoading.js("/js/wappublic.js");
+			dynamicLoading.js("/js/vue.min.js");
+			dynamicLoading.js("/js/common.js");
+		</script>	
+	</head>
+
+	<body> 
+		<!--主体信息-->
+		<div class="mui-content ksjs graduate" id="reward_paper">
+			<div class="header">
+				<div class="touxiang">
+					<div class="img-show">
+						<!--<img src="img/touxiangnv.png" />-->
+						<img :src="_cdn_admin_path+anchor.headPicture"/>
+					</div>	
+				</div>
+				<div class="mingzi">
+					<h3>{{anchor.name}}</h3>
+					<p>正确率 {{rate}} 用时 {{time}}</p>
+				</div>
+				<!--<div class="mui-pull-right">
+					<svg class="icon">
+						<use xlink:href="#icon-paihang_shangsheng"></use>
+					</svg><sup>5</sup>
+				</div>-->
+			</div>
+			<div class="content">
+				<!--<img  src="img/medal_purple@3x.png"/>-->
+				<!--<img :src="globel.ctx+medal"/>-->
+				<template v-if="medalId!=null && medalId!=''">
+					<template v-if="medalId=='4'">
+						<img  src="img/medal_purple@3x.png"/>
+					</template>
+					<template v-else-if="medalId=='2'">
+						<img  src="img/medal_green@3x.png"/>
+					</template>
+					<template v-else-if="medalId=='3'">
+						<img  src="img/medal_red@3x.png"/>
+					</template>
+					<template v-else-if="medalId=='1'">
+						<img  src="img/medal_blue@3x.png"/>
+					</template>
+					<template v-else-if="medalId=='5'">
+						<img  src="img/bj_trophy@3x.png"/>
+					</template>
+				</template>
+				<div class="score">
+					<span>恭喜你</span>
+					<p>获得以下奖励</p>
+					<div class="get-reward">
+						<template v-if="redpacket!=null&&redpacket!=''&&title!=null&&title!=''">
+							<img src="img/bj_ribbon@3x.png"/>
+							<span class="reward">{{title}}+{{redpacket}}</span>
+						</template>
+						<template v-else-if="redpacket!=null&&redpacket!=''">
+							<img src="img/bj_ribbon@3x.png"/>
+							<span class="reward">{{redpacket}}</span>
+						</template>
+						<template v-else-if="title!=null&&title!=''">
+							<img src="img/bj_ribbon@3x.png"/>
+							<span class="reward">{{title}}</span>
+						</template>
+					</div>
+					<a href="anchor_train_rewardcenter.html">点击领取奖励<span class="icon font_family icon-shouye_youjiantou_chakangengduo"></span></a>
+				</div>
+				<template v-if="graduation==1">
+					<button v-on:click="graduate()">领取毕业证</button>
+				</template>
+				<template v-else>
+					<button v-on:click="nextStep()">学习下一课</button>
+				</template>
+				<div style="height: 1px;"></div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			var ksjs = document.getElementsByClassName("ksjs")[0];
+			autodivheight(ksjs);
+		</script>
+		<script type="text/javascript">
+			var courseid = sessionStorage.getItem('courseid');
+			var usedTime = sessionStorage.getItem("usetime");
+			$(document).ready(function(){
+				new Vue({
+					el: '#reward_paper',
+					data: {
+						anchor:"",
+						rewardList:"",
+						rate:"",
+						graduation:"",
+						course:"",
+						medal:"",
+						redpacket:"",
+						title:"",
+						medalId:"",
+						time:usedTime
+					},
+					created: function() {
+						var _self = this;
+						$.ajax({
+							type: 'get',
+							url: globel.ctx + apiconfig.getReward_url,
+							data: {
+								token: globel.token,
+								courseId:courseid
+							},
+							dataType: 'json', 
+							success: function(res) {
+								if(res.success == true) {
+									_self.anchor = res.body.anchor;
+									_self.rewardList = res.body.rewardList;
+									_self.rate = res.body.rightRate;
+									_self.graduation = res.body.graduation;
+									_self.course = res.body.course;
+									_self.redpacket = res.body.redpacket;
+									_self.medal = res.body.medal;
+									_self.title = res.body.title;
+									_self.medalId = res.body.medalId;
+								}else{
+									//mui.alert("系统出错，请重试！")
+								}
+							}
+						})
+					},
+					methods: {
+						nextStep:function(){
+							var courseSort = this.course.sort+1;
+							location = htmlconfig.anchor_course_details+'?type=1&courseSort='+courseSort+'&lessonSort=1';
+						},
+						graduate:function(){
+							var name = this.anchor.name;
+							location = htmlconfig.anchor_train_exam_share+'?name='+name;
+						}
+					   
+					}
+		
+			    });
+			 
+			})
+		</script>
+	</body>
+
+</html>

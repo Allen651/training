@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.mystudy.dao.ApplicantDao">
+    
+	<sql id="applicantColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userid",
+		a.name AS "name",
+		a.lesson_id AS "lessonid",
+		a.current_progress AS "currentprogress",
+		a.studio AS "studio",
+		a.agent AS "agent",
+		a.application_time AS "applicationtime"
+	</sql>
+	
+	<sql id="applicantJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="Applicant" >
+		SELECT 
+			<include refid="applicantColumns"/>
+		FROM train_applicant a
+		<include refid="applicantJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Applicant" >
+		SELECT 
+			a.*,s.lesson_name
+		FROM train_applicant a, train_lesson s
+		<include refid="applicantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and s.id = a.lesson_id 
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 按权限查找申请学习列表 -->
+	<select id="findApplicaList" resultType="Applicant" >
+		SELECT 
+			a.*,s.lesson_name
+		FROM train_applicant a, train_lesson s , zhaomu_anchor_info z
+		LEFT JOIN sys_office office ON z.company = office.id
+		<include refid="applicantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and s.id = a.lesson_id and z.user_id = a.user_id and z.del_flag= '0'
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<!-- 数据范围过滤 -->
+		     ${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Applicant" >
+		SELECT 
+			<include refid="applicantColumns"/>
+		FROM train_applicant a
+		<include refid="applicantJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO train_applicant(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			name,
+			lesson_id,
+			current_progress,
+			studio,
+			agent,
+			application_time
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userid},
+			#{name},
+			#{lessonid},
+			#{currentprogress},
+			#{studio},
+			#{agent},
+			#{applicationtime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE train_applicant SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userid},
+			name = #{name},
+			lesson_id = #{lessonid},
+			current_progress = #{currentprogress},
+			studio = #{studio},
+			agent = #{agent},
+			application_time = #{applicationtime}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM train_applicant
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE train_applicant SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Applicant" statementType="STATEMENT">
+		select * FROM train_applicant  where ${propertyName} = '${value}'
+	</select>
+	
+	<!--查询数据库有没有这条信息,没有添加,有了更新 -->
+	<select id="findUserLesson" resultType="Applicant">
+		SELECT * FROM `train_applicant` where user_id=#{0} and lesson_id=#{1};
+	</select>
+	
+</mapper>

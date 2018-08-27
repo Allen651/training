@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.mystudy.dao.ComnentGiveLikeDao">
+    
+	<sql id="comnentGiveLikeColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.comment_id AS "commentid",
+		a.user_id AS "userid",
+		a.relatid AS "relatid",
+		a.d_type AS "type"
+	</sql>
+	
+	<sql id="comnentGiveLikeJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="ComnentGiveLike" >
+		SELECT 
+			<include refid="comnentGiveLikeColumns"/>
+		FROM comment_givelike a
+		<include refid="comnentGiveLikeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComnentGiveLike" >
+		SELECT 
+			<include refid="comnentGiveLikeColumns"/>
+		FROM comment_givelike a
+		<include refid="comnentGiveLikeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComnentGiveLike" >
+		SELECT 
+			<include refid="comnentGiveLikeColumns"/>
+		FROM comment_givelike a
+		<include refid="comnentGiveLikeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO comment_givelike(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			comment_id,
+			user_id,
+			relatid,
+			d_type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{commentid},
+			#{userid},
+			#{relatid},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE comment_givelike SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			comment_id = #{commentid},
+			user_id = #{userid},
+			relatid = #{relatid},
+			d_type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM comment_givelike
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deletezan">
+		DELETE FROM comment_givelike
+		WHERE user_id=#{1} and relatid = #{0}
+	</update>
+	
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE comment_givelike SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComnentGiveLike" statementType="STATEMENT">
+		select * FROM comment_givelike  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="finddianzan" resultType="ComnentGiveLike">
+		SELECT g.*,g.d_type 'type' FROM comment_givelike g,train_comment a where a.userid = g.relatid and g.user_id=#{0}  and  g.comment_id=#{1};
+	</select>
+	
+</mapper>

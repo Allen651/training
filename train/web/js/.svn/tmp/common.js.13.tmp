@@ -1,0 +1,159 @@
+/*
+ * 全局信息配置
+ * Author:wangqy
+ * Date:2018-1-23 18:53
+ */
+
+//项目全局配置
+var globel={
+	//ctx:'http://admin.bbohu.com/',
+	//ctx:'http://localhost:8080/bbohu/',
+	ctx:'http://192.168.5.36:8080/bbohu/',
+    token: sessionStorage.getItem("token")
+}
+
+//项目请求url配置
+var apiconfig={
+			  anchorLogin_url:'f/api/anchorLogin',//主播登录
+			  talentLogin_url:'f/api/talentLogin',//星探登录
+				  regiser_url:'f/api/regist',//注册
+				   logout_url:'f/api/logout',//注销
+			getAnchorInfo_url:'f/api/getAnchorInfo',//获取主播信息
+			getTalentInfo_url:'f/api/getTalentInfo',//获取星探信息
+			          ocr_url:'f/api/idcard/ocr',//身份证识别
+			         face_url:'f/api/idcard/face',// 人脸比对
+			     certifer_url:'f/api/idcard/certifer',//实名认证
+			  uploadImage_url:'f/api/idcard/uploadImage',//base64图片上传
+			      sendSms_url:'f/api/sendSms',//发送短信验证码
+			resetPassword_url:'f/api/resetPassword',//重置密码
+		   saveAnchorInfo_url:'f/api/saveAnchorInfo',//保存主播报名信息
+		   saveTalentInfo_url:'f/api/saveTalentInfo',//保存星探报名信息
+		         progress_url:'f/api/progress',// 查看审核进度
+		  talent_progress_url:'f/api/talentProgress',// 查看审核进度
+		           config_url:'f/api/weixin/config',//微信配置
+		    downloadMedia_url:'f/api/weixin/downloadMedia',//微信媒体文件下载
+		        shareinfo_url:'f/api/weixin/getWxShare',//微信分享信息
+		       connectReq_url:'f/api/weixin/connectReq',//微信授权请求
+		          getWxId_url:'f/api/weixin/getWxId',//获取微信openid
+		           bindWx_url:'f/api/weixin/bindWx',//绑定微型openid
+		       propaganda_url:'f/api/propaganda',//内容管理
+		      createQCode_url:'f/api/createQCode',//生成二维码
+			 getNowTalent_url:'f/api/getTalentbycode',//当前星探信息
+			 getNowAnchor_url:'f/api/getAnchorbycode',//当前主播信息
+		     directAnchor_url:'f/api/directAnchor',//直接主播信息
+		   indirectAnchor_url:'f/api/indirectAnchor',//间接主播信息
+	        unauditAnchor_url:'f/api/unauditAnchor',//未审主播信息
+	         directTalent_url:'f/api/directTalent',//直接星探信息
+	       indirectTalent_url:'f/api/indirectTalent',//间接星探信息
+	        unauditTalent_url:'f/api/unauditTalent',//未审星探信息
+	         getLiveRooms_url:'f/api/getLiveRooms',//获取直播间
+	            startLive_url:'f/api/startLive',//填写直播信息，开启直播
+	        accountcenter_url:'f/api/getlowerTalent' ,//账户中心
+	        incomeDetails_url:'f/api/incomeDetails',//收益明细
+	   talentrRankingList_url:'f/api/talentRankingList' ,//星探收益排行榜
+	           propaganda_url:'f/api/propaganda',//获取宣传内容
+	      getDirectAnchor_url:'f/api/getDirectAnchor',//获取主播报名信息
+	      getDirectTalent_url:'f/api/getDirectTalent',//获取星探报名信息
+	         verifyAnchor_url:'f/api/verifyAnchor',//审核主播
+	         verifyTalent_url:'f/api/verifyTalent',//审核星探
+	         refuseTalent_url:'f/api/refuseTalent',//拒绝星探
+	         refuseAnchor_url:'f/api/refuseAnchor',//拒绝主播
+	   anchorRevocatApply_url:'f/api/anchorRevocatApply',//主播撤销申请
+	   talentRevocatApply_url:'f/api/talentRevocatApply', //星探撤销申请
+	            getAnchor_url:'f/api/getAnchor',//查询主播信息
+	            getTalent_url:'f/api/getTalent',//查询星探信息
+	    saveTalentHeadPic_url:'f/api/saveTalentHeadPic',//保存星探头像url
+	    saveAnchorHeadPic_url:'f/api/saveAnchorHeadPic',//保存主播头像url    
+	        invitationNum_url:'f/api/invitationNum',//接受邀请次数
+	             showNews_url:'f/api/showNews',//消息显示
+	          newsDetails_url:'f/api/newsDetails',//消息详情
+	           UnReadNews_url:'f/api/UnReadNews',//未读消息
+	      editAnchorApply_url:'f/api/editAnchorApply',//主播修改资料
+	      editTalentApply_url:'f/api/editTalentApply',//星探修改资料
+	        getCourseInfo_url:'f/api/getCourseInfo',//获取某个课程信息
+	          getPlayauth_url:'f/api/getPlayauth',//获取播放凭证
+	      getAllLessonDir_url:'f/api/getAllLessonDir',//获取所有章节目录
+	           saveAnswer_url:'f/api/saveAnswer',//保存考试明细，并计算考试成绩
+	             examlist_url:'f/api/examlist',//查询试题
+	          getMyCourse_url:'f/api/getMyCourse',//获取所有课程目录
+getStandardStudyingCourse_url:'f/api/getStandardStudyingCourse',//获取正在学习的标准课程章节信息
+       listAdvancedCourse_url:'f/api/listAdvancedCourse',//获取扩展课程列表
+                 isReward_url:'f/api/isReward',//是否有奖励
+                getReward_url:'f/api/getReward',//获取奖励内容
+       listAdvancedCourse_url:'f/api/listAdvancedCourse',//获取扩展课程列表
+     getAdvancedLessonDir_url:'f/api/getAdvancedLessonDir',//获取扩展课程某课程目录
+<<<<<<< .mine
+                scoreRank_url:'f/api/scoreRank',//获取成绩排行榜
+                studyRank_url:'f/api/studyRank'//获取学习排行榜
+=======
+                scoreRank_url:'f/api/scoreRank',//获取成绩排行榜
+      getStandardPathInfo_url:'f/api/getStandardPathInfo'//获取标准课程路径页信息
+>>>>>>> .r1884
+}
+
+//项目html路径配置
+var htmlconfig={
+	     anchor_login:'anchor_login.html',//主播登录页面
+		 talent_login:'talent_login.html',//星探登录页面
+		   forget_pwd:'forget_pwd.html',//忘记密码
+	         register:'register.html',//注册页面
+		  choose_role:'choose_role.html',//选择身份页面
+		 anchor_index:'anchor_index.html',//主播主页
+		 anchor_apply:'anchor_apply.html',//主播申请
+		anchor_verify:'anchor_verify.html',//主播审核
+		apply_success:'apply_success.html',//申请成功页
+	   verify_success:'verify_success.html',//审核成功页面
+		verify_status:'verify_status.html',//主播审核状态页
+		  bind_weixin:'bind_weixin.html',//绑定微信   
+	  talent_personal:'talent_personal.html',//星探个人中心
+	  anchor_personal:'anchor_personal.html',//主播个人中心
+	     anchor_share:'anchor_share.html',//主播招募分享页面
+	     talent_share:'talent_share.html',//星探招募分享页面
+	    certification:'certification.html',//实名认证
+	   income_details:'income_details.html',//收益明细
+	   my_lower_level:'my_lower_level.html',//我的下级
+	        my_talent:'my_talent.html',//我的星探
+	        my_anchor:'my_anchor.html',//我的主播
+	     talent_apply:'talent_apply.html',//星探申请
+	    talent_verify:'talent_verify.html',//星探审核
+	     talent_index:'talent_index.html',//星探主页
+	   talent_setting:'talent_setting.html',//星探设置
+	   talent_account:'talent_account.html',//星探账户中心
+	    share_templet:'share_templet.html',//招募分享模板
+	    talent_qrcode:'talent_qrcode.html',//星探二维码
+	      talent_list:'talent_list.html',//星探排行列表
+ talent_verify_status:'talent_verify_status.html',//星探审核状态
+   anchor_train_index:'anchor_train_index.html',//主播培训页
+anchor_course_details:'anchor_course_details.html',//主播培训课程详情
+ anchor_train_my_exam:'anchor_train_my_exam.html',//主播培训课程详情
+anchor_train_test_paper:'anchor_train_test_paper.html',//主播考试
+anchor_train_exam_end:'anchor_train_exam_end.html',//主播考试结束
+anchor_train_exam_share:'anchor_train_exam_share.html',//拍摄毕业照
+anchor_train_graduation:'anchor_train_graduation.html'//获取奖励页面
+}
+
+var wxshare={
+	share_link_url:'http://web.bbohu.com/shareinfo.html',
+	anchor_share_qcode_url:'http://web.bbohu.com/anchor_login.html',
+	talent_share_qcode_url:'http://web.bbohu.com/talent_login.html'
+}
+
+var vm = new Vue({
+  el: '#AppMain',
+  data: {
+     htmlconfig:htmlconfig
+  }
+});
+
+//定义空对象用于数据传递
+var message_model={
+	imageUrl:''
+};
+
+//获取地址栏参数
+function GetQueryString(name){
+     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+     var r = window.location.search.substr(1).match(reg);
+     if(r!=null)return  decodeURI(r[2]); 
+     return null;
+}

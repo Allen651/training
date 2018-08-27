@@ -1,0 +1,306 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>个人中心</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="css/iconfont.css" />
+		<link rel="stylesheet" href="css/wappublic.css" />
+		<link rel="stylesheet" href="css/style.css" />
+		<link rel="stylesheet" href="css/upload.css" />
+		<link rel="stylesheet" href="css/cropper.css" />
+		<script type="text/javascript" src="js/iconfont.js"></script>
+		<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+		<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+		<script type="text/javascript" src="js/wx.js"></script>
+		<script src="https://cdn.bootcss.com/jquery.touchswipe/1.6.18/jquery.touchSwipe.js"></script>
+		<script type="text/javascript" src="js/hammer.min.js"></script>
+		<script type="text/javascript" src="js/slider.js"></script>
+		<script type="text/javascript" src="js/vue.min.js"></script>
+		<script type="text/javascript" src="js/common.js"></script>
+		<script type="text/javascript" src="js/base.js"></script>
+		<script type="text/javascript" src="js/myCrop.js" ></script>
+		
+
+	</head>
+
+	<body>
+		<!--主体-->
+		<div class="mui-content grzx_a_details anchorinfo" id="">
+			
+			<!--标题-->
+			<div class="personal_message">
+				<div class="pictures imgCut">
+					<div class="pictures_item" v-for="img in imgs">
+						<div class="smallImg"><img :src="img | replace" class="yuan"/></div>
+					</div>
+					
+					<!--<input type="hidden" id="headPicUrl" value=""/>-->
+					
+					<div class="upload-box " style="display: none;">
+						<div class="image-box clear">
+							<section class="upload-section">
+								<div class="upload-btn"></div>
+								<span class="icon font_family icon-zhuboduan_baoming_"></span>
+								<input type="file" name="file" id="upload-input" @click="shangchuan" value="" accept="image/*" multiple="multiple" />
+							</section>
+						</div>
+					</div>
+					
+					<!--点击修改生活照-->
+
+					<!--<div class="pictures_item">
+						<img :src="img | replace"/>
+					</div>
+					<div class="pictures_item">
+						<img :src="img | replace"/>
+					</div>-->
+
+				</div>
+				<div class="touxiang mui-row imgCut">
+
+					<div class="mingzi">
+						<template v-if="chenghao != null">
+							<h3>{{anchor.name}}<span><img src="img/gold_in.png"/>{{chenghao}}</span></h3>
+						</template>
+						<template v-else>
+							<h3>{{anchor.name}}<span><img src="img/gold_in.png"/>青铜主播</span></h3>
+						</template>
+
+						<template v-if="anchor.fansAmount != null ">
+							<span>{{anchor.playPlatform|platformFilter}}房间号：{{anchor.playHomeid}} 粉丝 {{anchor.fansAmount}}</span>
+						</template>
+						<template v-else>
+							<span>{{anchor.playPlatform|platformFilter}} 房间号：{{anchor.playHomeid}} 粉丝 暂无</span>
+						</template>
+					</div>
+					<span class="mui-pull-right " id="guan" @click="guanzhu(1)">
+						<span class="icon font_family icon-zhuboduan_gerenzhongxin_guanzhu"></span>
+					<span class="icon font_family icon-zhuboduan_baoming_"> 关注</span>
+					</span>
+
+					<span class="mui-pull-right " id="yiguan" @click="guanzhu(0)" style="display: none;">
+						<span class="icon font_family icon-zhuboduan_gerenzhongxin_guanzhu"></span>
+					<span class="icon font_family ">已关注</span>
+					</span>
+				</div>
+			</div>
+			<!--tab切换-->
+			<div class="anchorinfo">
+				<!--基本资料-->
+				<ul class="first-list jibenziliao" id="first-list">
+					<!--录音-->
+					<!---->
+
+					<div class="record" @click="donghua()">
+						<span id="musicControl">  
+							<a id="mc_play" class="on" >
+				            	<audio id="musicfx">  
+				               	 	<source :src="luyinId | urlFilter" type="audio/mpeg"></source>
+				           		</audio>
+				    		</a>
+				 		</span>
+						<span class="play_warp"></span>
+						<span id="recordPlay" class="icon font_family icon-yuyinzuo"></span>
+						<span class="duration"> 10"</span>
+					</div>
+
+					<button class="tape" @click="gototape" id="lu">录 音</button>
+					<div class="title">
+						<span class="sekuai"></span>
+						<span id="geren">个人信息</span>
+					</div>
+					<li class="">
+						<div><label for="">昵称</label><input type="text" id="nickname" name="nickname" class="mui-pull-right mui-text-right edit" disabled="disabled" :value="anchor.nickName" /></div>
+					</li>
+					<li>
+						<div><label for="">所在城市</label><input type="text" id="address" name="address" class="mui-pull-right mui-text-right edit" disabled="disabled" :value="anchor.address" /></div>
+					</li>
+					<li>
+						<div><label for="">职业</label><input type="text" id="profession" name="profession" class="mui-pull-right mui-text-right edit" disabled="disabled" :value="anchor.profession" /></div>
+					</li>
+					<!--<template v-if="anchor.isDisplayMobile == 1 || anchor.isDisplayMobile == null">-->
+					<template v-if="anchor.isDisplayMobile == 1 ">
+						<li>
+							<div><label for="">手机号</label><input type="text" class="mui-pull-right mui-text-right" disabled="disabled" :value="anchor.mobile" /></div>
+						</li>
+					</template>
+					<template v-else>
+						<li>
+							<div><label for="">手机号</label><input type="text" class="mui-pull-right mui-text-right" disabled="disabled" :value="mobile" /></div>
+						</li>
+					</template>
+					
+					<!--flag == 1 && -->
+					<template v-if="anchor.isDisplayWenXin == 1 " >
+						<li>
+							<div><label for="">微信号</label><input type="text" name="weixinNumber"  :value="anchor.weixinNumber" class="mui-pull-right mui-text-right edit" disabled="disabled" id="weixin" /></div>
+						</li>
+					</template>
+
+					<template v-else>
+						<li>
+							<div><label for="">微信号</label><input type="text" name="weixinNumber" :value="weixinNumber" class="mui-pull-right mui-text-right edit" disabled="disabled" id="weixin" /></div>
+						</li>
+					</template>
+
+					
+
+					<template v-if="anchor.fansAmount!=null">
+						<li>
+							<div><label for="">粉丝数</label><input type="text" name="fansAmount" class="mui-pull-right mui-text-right" disabled="disabled" id="fansAmount" :value="anchor.fansAmount" /></div>
+						</li>
+					</template>
+
+					<template v-else>
+						<li>
+							<div><label for="">粉丝数</label><input type="text" name="fansAmount" class="mui-pull-right mui-text-right" disabled="disabled" id="fansAmount" value="无" /></div>
+						</li>
+					</template>
+
+					<!--<li>
+						<div><label for="">直播开始时段</label><input type="text" class="mui-pull-right mui-text-right" disabled="disabled"  :placeholder="anchor.starttime" />
+						</li>
+						<li>
+						<div><label for="">直播结束时段</label><input type="text" class="mui-pull-right mui-text-right" disabled="disabled"  :placeholder="anchor.endtime" />
+						</li>	-->
+					<li>
+						<div><label for="">工作室</label><input type="text" class="mui-pull-right mui-text-right" disabled="disabled" :value="anchor.office.name" /></div>
+					</li>
+					<template v-if="anchor.roomurl != null ">
+						<li>
+							<div><label for="">直播地址</label><input type="text" name="roomurl" id="roomurl" class="mui-pull-right mui-text-right edit" disabled="disabled" :value="anchor.roomurl" /></div>
+						</li>
+					</template>
+					<template v-else>
+						<li>
+							<div><label for="">直播地址</label><input type="text" name="roomurl" id="roomurl" class="mui-pull-right mui-text-right edit" disabled="disabled" value="无" /></div>
+						</li>
+					</template>
+
+					<template v-if="anchor.personalDesc != null ">
+						<li>
+							<div>
+								<label for="">个人描述</label>
+								<textarea class="mui-pull-right edit" rows="3" name="personalDesc" id="desc" disabled="disabled" :value="anchor.personalDesc">
+							</textarea>
+							</div>
+						</li>
+					</template>
+
+					<template v-else>
+						<li>
+							<div>
+								<label for="">个人描述</label>
+								<textarea class="mui-pull-right edit" rows="3" name="personalDesc" id="desc" disabled="disabled" :value="desc">
+							</textarea>
+							</div>
+						</li>
+					</template>
+
+				</ul>
+			</div>
+			<div class="begbring">
+				<button onclick="createOrder()">下 单</button>
+			</div>
+			<div @click="edit" id="edit1122">
+				<svg class="icon">
+					<use xlink:href="#icon-bianji"></use>
+				</svg>
+			</div>
+			<div id="save" @click="save" class="begbring" style="display: none;">
+				<button>保存</button>
+			</div>
+			<div id="mark">
+				<div class="visual o-sliderContainer" id="pbSliderWrap">
+					<div class='o-slider' id='pbSlider'>
+						<template v-for="(img,index) in imgs">
+							<div class="o-slider--item">
+								<img v-bind:src="img |replace" alt="" />	
+								<div class="settx" id="shezhihead" @click="shezhihead(img)">设为头像</div>
+							</div>			
+						</template>						
+					</div>
+				</div>
+				
+			</div>
+		</div>
+
+		<script src="js/mui.min.js"></script>
+		<script type="text/javascript" src="js/wappublic.js"></script>
+		<script type="text/javascript" src="js/anchor.js"></script>
+		<script type="text/javascript" src="js/upload.js"></script>
+		<script type="text/javascript" src="js/imageUpload.js" ></script>
+		<script type="text/javascript">
+			mui.init()
+			window.onload = is_weixin();
+			var mark = document.getElementById("mark");
+			autodivheight(mark);
+			imgCenter();
+			/*头像完美适应*/
+			for(var i = 0; i < $(".touxiang-box img").length; i++) {
+				if($(".touxiang-box img").eq(i).height() > $(".touxiang-box img").eq(i).width()) {
+					$(".touxiang-box img").eq(i).css({
+						"width": "35px",
+						"height": "auto"
+					});
+				} else {
+					$(".touxiang-box img").eq(i).css({
+						"height": "35px",
+						"width": "auto"
+					});
+				}
+			}
+			/*生活照完美适应居中*/
+			for(var i = 0; i < $(".pictures_item img").length; i++) {
+				if($(".pictures_item img").eq(i).height() > $(".pictures_item img").eq(i).width()) {
+					$(".pictures_item img").eq(i).css({
+						"width": "80px",
+						"height": "auto"
+					});
+				} else {
+					$(".pictures_item img").eq(i).css({
+						"height": "80px",
+						"width": "auto"
+					});
+				}
+			}
+			/*播放录音动效*/
+			
+			///*音乐播放控制*/
+			function play_music() {
+				/*$('.record audio').get(0).play();*/
+				if($('.record').hasClass('on')) {
+					document.getElementById('musicfx').pause();
+					$('.record').attr('class', 'stop');
+				} else {
+					document.getElementById('musicfx').play();
+					$('.record').attr('class', 'on');
+				}
+				$('#music_play_filter').hide();
+				event.stopPropagation(); //阻止冒泡  
+			}
+
+			function just_play(id) {
+				$('.record audio').get(0).play();
+				$('.record').attr('class', 'on');
+				if(typeof(id) != 'undefined') {
+					$('#music_play_filter').hide();
+				}
+				event.stopPropagation(); //阻止冒泡  
+			}
+
+			function createOrder() {
+				location = "anchor_personal_pay.html?userId=" + GetQueryString('id');
+			}
+
+			/*function play() {
+				document.getElementById('musicfx').play();
+			}*/
+		</script>
+
+	</body>
+
+</html>

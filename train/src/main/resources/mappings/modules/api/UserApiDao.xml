@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.api.dao.UserApiDao">
+    
+	<sql id="userApiColumns">
+		a.id AS "id",
+		a.usercode AS "usercode",
+		a.mobile AS "mobile",
+		a.nickname AS "nickname",
+		a.password AS "password",
+		a.weixin_operid AS "weixin_operid",
+		a.refercode AS "refercode",
+		a.istalent AS "istalent",
+		a.isanchor AS "isanchor"
+	</sql>
+	
+	<sql id="userApiJoins">
+		<!-- LEFT JOIN zhaomu_anchor_account ac on ac.userid = a.id  -->
+	</sql>
+	
+    	
+	<!-- 根据OfficeId获取用户（树查询前台主播用户时用） -->
+	<select id="findAnchorUserByOfficeId" resultType="UserApi" useCache="true">	
+      select u.id, u.usercode,u.nickname,a.name
+       from zhaomu_user u ,zhaomu_anchor_info a 
+       where u.id =a.user_id and isanchor=1 and a.office= #{officeId} and a.del_flag = 0
+	  ORDER BY a.name
+	</select>
+	
+		<!-- 根据OfficeId获取用户（树查询前台星探用户时用） -->
+	<select id="findTalentUserByOfficeId" resultType="UserApi" useCache="true">	
+      select u.id, u.usercode,u.nickname,a.name
+       from zhaomu_user u ,zhaomu_talent_info a 
+       where u.id =a.user_id and istalent=1 and a.office= #{officeId} and a.del_flag = 0
+	  ORDER BY a.name
+	</select>
+	
+	<select id="get" resultType="UserApi" >
+		select 
+			<include refid="userApiColumns"/>
+		from zhaomu_user a
+		<include refid="userApiJoins"/>
+		where a.id = #{id}
+	</select>
+	
+	<!-- 根据登录名查询用户 -->
+	<select id="findBymobile"  resultType="UserApi" >
+		select
+			<include refid="userApiColumns"/>
+		from zhaomu_user a
+		<include refid="userApiJoins"/>
+		where a.mobile = #{mobile}
+	</select>
+	
+		<!-- 根据微信openid查询用户 -->
+	<select id="findByOpenId"  resultType="UserApi" >
+		select
+			<include refid="userApiColumns"/>
+		from zhaomu_user a
+		where a.weixin_operid = #{openid}
+	</select>
+	
+	<!-- 根据推荐编码查询用户 -->
+	<select id="findByrefercode"  resultType="UserApi" >
+		select
+			<include refid="userApiColumns"/>
+		from zhaomu_user a
+		where a.refercode = #{refercode}
+	</select>
+	
+	<select id="findList" resultType="UserApi" >
+		select 
+			<include refid="userApiColumns"/>
+		from zhaomu_user a
+		<include refid="userApiJoins"/>
+	   where 1=1
+	   
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	<select id="findAllList" resultType="UserApi" >
+		select 
+			<include refid="userApiColumns"/>
+		from zhaomu_user a
+		<include refid="userApiJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO zhaomu_user(
+			id,
+			mobile,
+			nickname,
+			password,
+			weixin_operid,
+			refercode,
+			istalent,
+			isanchor,
+			create_date
+		) VALUES (
+			#{id},
+			#{mobile},
+			#{nickname},
+			#{password},
+			#{weixin_operid},
+			#{refercode},
+			#{istalent},
+			#{isanchor},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE zhaomu_user SET 	
+			nickname = #{nickname},
+			password = #{password},
+			weixin_operid = #{weixin_operid},
+			istalent = #{istalent},
+			isanchor = #{isanchor},
+			refercode = #{refercode}
+		where id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE from zhaomu_user
+		where id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE zhaomu_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		where id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserApi" statementType="STATEMENT">
+		select * from zhaomu_user  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="finByAnchor" resultType="AnchorInfo">
+		<!-- select * from zhaomu_user u left join `zhaomu_anchor_info` a on  u.id =a.user_id  where isanchor = '1' and a.del_flag = 0 -->
+		SELECT
+			u.*,a.*,a.company AS "company.id"
+		FROM
+			zhaomu_user u
+		LEFT JOIN `zhaomu_anchor_info` a ON u.id = a.user_id
+		WHERE
+			NOT EXISTS (
+				SELECT
+					b.agent
+				FROM
+					zhaomu_anchor_info b
+				WHERE
+					b.agent = 'da293ca546644a24a483a991918bf216' <!--此id为李苏    代表老主播  不参与计算星探收益 -->
+				AND a.id = b.id
+			)
+		AND a.contract = '5'
+		AND a.del_flag = 0 and a.company = #{value} 
+	</select>
+	
+	
+	<select id="finByTalent" resultType="com.jeeplus.modules.api.model.AccountModel" >
+	select	u.*,t.name,t.company AS "company.id" from zhaomu_user u,zhaomu_talent_info t where t.del_flag=0 and u.id=t.user_id and u.istalent = '1' and t.company = #{0} and u.mobile NOT IN (select phone from talent_fenxiaoguanli where YEAR = #{1} and MONTH = #{2})
+	</select>
+	
+	
+	<!--根据推荐人编码查上级  -->
+	<select id="finByshangji" resultType="com.jeeplus.modules.api.model.AccountModel" statementType="STATEMENT">
+		select u.*,t.name,t.talent_level talentlevel ,t.referee  referee from zhaomu_user u LEFT JOIN zhaomu_talent_info t on t.del_flag=0 and u.id = t.user_id  where u.usercode = '${value}'
+	</select>
+	
+	<select id="findAnchorAccount" resultType="ZhaomuAnchorAccount" >
+		<!--  select * from zhaomu_user u left join  zhaomu_anchor_account a  on  u.id =a.userid  where u.id = #{0} and a.month=#{1} and a.year = #{2} -->
+		<!-- select u.usercode,u.mobile,u.nickname,u.refercode,u.istalent,u.isanchor, u.id uid, a.* from zhaomu_user u left join  zhaomu_anchor_account a  
+		on  u.id =a.userid  where u.id = #{0} and a.month=#{1} and a.year = #{2} -->
+		SELECT
+			u.usercode,
+			u.mobile,
+			u.nickname,
+			u.refercode,
+			u.istalent,
+			u.isanchor,
+			u.id uid,
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.houseid AS "houseid",
+			a.nickname AS "nickname",
+			a.anchorName AS "anchorName",
+			a.playPlatform AS "playPlatform",
+			a.income AS "income",
+			a.year AS "year",
+			a.month AS "month",
+			a.userid AS "userid",
+			a.live_time AS "liveTime",
+			a.signed_type AS "signedType",
+			a.beginshow_type AS "beginshowType",
+			a.one_type AS "oneType",
+			a.two_type AS "twoType",
+			a.three_type AS "threeType",
+			a.company AS "company"
+		FROM
+			zhaomu_user u
+		LEFT JOIN zhaomu_anchor_account a ON u.id = a.userid
+		WHERE
+			u.id = #{0}
+		AND a.month = #{1} AND a.year = #{2}
+				
+	</select>
+	
+	<select id="findAnchorAccountType" resultType="ZhaomuAnchorAccount">
+			SELECT
+			u.usercode,
+			u.mobile,
+			u.nickname,
+			u.refercode,
+			u.istalent,
+			u.isanchor,
+			u.id uid,
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.houseid AS "houseid",
+			a.anchorName AS "anchorName",
+			a.playPlatform AS "playPlatform",
+			a.income AS "income",
+			a. YEAR AS "year",
+			a. MONTH AS "month",
+			a.userid AS "userid",
+			a.live_time AS "liveTime",
+			a.signed_type AS "signedType",
+			a.beginshow_type AS "beginshowType",
+			a.one_type AS "oneType",
+			a.two_type AS "twoType",
+			a.three_type AS "threeType",
+			a.company AS "company.id" 
+		FROM
+			zhaomu_user u
+		LEFT JOIN zhaomu_anchor_account a ON u.id = a.userid
+		WHERE
+		u.id = #{0} 
+			and (a.`month` &lt; #{1} and a.`year` = #{2})
+			or a.`year` &lt; #{2}
+		ORDER BY a.`year` desc ,a.`month` desc LIMIT 1 
+			
+	</select>
+	
+	
+	<!-- 查总时长 -->
+	<select id="findTotalTime" resultType="String">
+		SELECT
+			SUM(a.live_time) AS "liveTime"
+		FROM
+			zhaomu_user u
+		LEFT JOIN zhaomu_anchor_account a ON u.id = a.userid
+		WHERE
+			u.id = #{userId}
+	
+	</select>
+	
+	<!--查询所有星探  -->
+		<select id="findByTalent"  resultType="com.jeeplus.modules.api.model.AccountModel" >
+		select
+			a.*,
+			t.name,t.sex,t.head_picture
+		from zhaomu_user a
+		left join zhaomu_talent_info t on a.id = t.user_id and t.del_flag=0
+		<trim prefix="where" prefixOverrides="and|or">
+		<if test="mobile != null and mobile != ''">
+		    and a.mobile = #{mobile}
+	    </if>
+        <if test="istalent != null and istalent != ''">
+		    and a.istalent = #{istalent}
+	    </if>
+		</trim>
+	</select> 
+	
+	<!-- 根据当前星探编码查询一级星探 -->
+	<select id="findBylower"  resultType="com.jeeplus.modules.api.model.AccountModel" >
+		select
+			a.*,
+			t.name,t.sex,t.head_picture
+		from zhaomu_user a 
+		left join zhaomu_talent_info t on a.id = t.user_id and t.del_flag=0
+		<trim prefix="where" prefixOverrides="and|or">
+		<if test="refercode != null and refercode != ''">
+		    and a.refercode = #{refercode}
+	    </if>
+        <if test="istalent != null and istalent != ''">
+		    and a.istalent = #{istalent}
+	    </if>
+		</trim>
+	</select> 
+	
+</mapper>
